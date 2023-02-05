@@ -1,12 +1,10 @@
 import { StyleSheet, Image, View, TextInput, SafeAreaView, Text, KeyboardAvoidingView, TouchableOpacity, Alert } from 'react-native'
 import React, { useState, useRef, useEffect } from 'react'
-import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
-import { firebaseConfig } from '../config';
 import firebase from 'firebase/compat/app';
 
 const VerificationScreen = ({ route }) => {
 
-    const phoneNumber = route.params.paramKey;
+    const verificationId = route.params.vid;
 
     const [one, setOne] = useState('')
     const [two, setTwo] = useState('')
@@ -15,26 +13,13 @@ const VerificationScreen = ({ route }) => {
     const [five, setFive] = useState('')
     const [six, setSix] = useState('')
     const code = one + two + three + four + five + six;
-    const [verificationId, setVerificationId] = useState(null);
-    const recaptchaVerifier = useRef(null);
-
-    const sendVerification = () => {
-        const phoneProvider = new firebase.auth.PhoneAuthProvider();
-        phoneProvider
-            .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
-            .then(setVerificationId);
-        //setPhoneNumber('');
-    };
-
+    
     const confirmCode = () => {
         const credential = firebase.auth.PhoneAuthProvider.credential(
             verificationId,
             code
         );
         firebase.auth().signInWithCredential(credential)
-            //.then(() => {
-            //setCode('');
-            //})
             .catch((error) => {
                 //show an alert
                 alert(error);
@@ -102,10 +87,6 @@ const VerificationScreen = ({ route }) => {
         <SafeAreaView style={styles.container}>
 
             <View>
-                <FirebaseRecaptchaVerifierModal
-                    ref={recaptchaVerifier}
-                    firebaseConfig={firebaseConfig}
-                />
                 <View style={styles.tinyLogoContainer}>
                     <Image
                         style={styles.tinyLogo}
@@ -114,18 +95,9 @@ const VerificationScreen = ({ route }) => {
                 </View>
                 <View>
                     <Text style={styles.header}>
-                        Values passed from First page: {route.params.paramKey} {'\n'}
                         seems like we're friends now! {'\n'}
                         just confirm it's you
                     </Text>
-                </View>
-                <View>
-                    <TouchableOpacity
-                        onPress={sendVerification}
-                        style={[styles.button]}
-                    >
-                        <Text style={[styles.buttonText]}>Request</Text>
-                    </TouchableOpacity>
                 </View>
 
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%', alignItems: 'center', justifyContent: 'center', alignContent: 'center', alignSelf: 'center' }}>
@@ -135,7 +107,6 @@ const VerificationScreen = ({ route }) => {
                             style={styles.input}
                             onChangeText={handleOne}
                             value={one}
-                            //placeholder="dd"
                             maxLength={1}
                             keyboardType="number-pad"
                         />
@@ -146,7 +117,6 @@ const VerificationScreen = ({ route }) => {
                             style={styles.input}
                             onChangeText={handleTwo}
                             value={two}
-                            //placeholder="mm"
                             maxLength={1}
                             keyboardType="number-pad"
                         />
@@ -157,7 +127,6 @@ const VerificationScreen = ({ route }) => {
                             style={styles.input}
                             onChangeText={handleThree}
                             value={three}
-                            //placeholder="mm"
                             maxLength={1}
                             keyboardType="number-pad"
                         />
@@ -168,7 +137,6 @@ const VerificationScreen = ({ route }) => {
                             style={styles.input}
                             onChangeText={handleFour}
                             value={four}
-                            //placeholder="mm"
                             maxLength={1}
                             keyboardType="number-pad"
                         />
@@ -179,7 +147,6 @@ const VerificationScreen = ({ route }) => {
                             style={styles.input}
                             onChangeText={handleFive}
                             value={five}
-                            //placeholder="mm"
                             maxLength={1}
                             keyboardType="number-pad"
                         />
@@ -190,7 +157,6 @@ const VerificationScreen = ({ route }) => {
                             style={styles.input}
                             onChangeText={text => setSix(text)}
                             value={six}
-                            //placeholder="mm"
                             maxLength={1}
                             keyboardType="number-pad"
                         />
@@ -217,7 +183,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'black',
-        //justifyContent: 'center',
         alignContent: 'center',
     },
     tinyLogo: {
@@ -229,14 +194,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     input: {
-        //width: '80%',
         height: 60,
         width: 60,
 
         marginHorizontal: 5,
         backgroundColor: '#1F1F1F',
-        //paddingHorizontal: 15,
-        //paddingVertical: 10,
         borderRadius: 10,
         marginTop: 40,
         borderColor: '#434343',
@@ -248,14 +210,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     inputYear: {
-        //width: '80%',
         height: 60,
         width: 120,
 
         marginHorizontal: 5,
         backgroundColor: '#1F1F1F',
-        //paddingHorizontal: 15,
-        //paddingVertical: 10,
         borderRadius: 10,
         marginTop: 40,
         borderColor: '#434343',

@@ -1,5 +1,8 @@
 import { StyleSheet, Image, View, TextInput, SafeAreaView, Text, KeyboardAvoidingView, TouchableOpacity } from 'react-native'
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import React, { useState, useRef, useEffect } from 'react'
+import { firebaseConfig } from '../config';
+import firebase from 'firebase/compat/app';
 
 const PhoneNumberScreen = ({ navigation }) => {
 
@@ -9,11 +12,35 @@ const PhoneNumberScreen = ({ navigation }) => {
         numberInput.current.focus();
     }, []);
     const isDisabled = !number.match(/^(?:\+\d{1,3}|\d{1,4})[\s-]?\d{3}[\s-]?\d{3}[\s-]?\d{3}$/)
+    const [verificationId, setVerificationId] = useState();
+    const recaptchaVerifier = useRef(null);
+    useEffect(() => {
+        if (verificationId) {
+          navigation.navigate('VerificationScreen', { 
+            paramKey: number, 
+            vid: verificationId 
+          });
+        }
+      }, [verificationId, navigation]);
+      
+
+    const sendVerification = () => {
+        console.log("im here");
+        const phoneProvider = new firebase.auth.PhoneAuthProvider();
+        phoneProvider
+            .verifyPhoneNumber(number, recaptchaVerifier.current)
+            .then(setVerificationId);
+        console.log(verificationId);
+    };
 
     return (
         <SafeAreaView style={styles.container}>
 
             <View>
+                <FirebaseRecaptchaVerifierModal
+                    ref={recaptchaVerifier}
+                    firebaseConfig={firebaseConfig}
+                />
                 <View style={styles.tinyLogoContainer}>
                     <Image
                         style={styles.tinyLogo}
@@ -42,11 +69,7 @@ const PhoneNumberScreen = ({ navigation }) => {
             </View>
             <KeyboardAvoidingView style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-end', width: '95%', alignSelf: 'center' }} behavior='padding' keyboardVerticalOffset={10}>
                 <TouchableOpacity
-                    onPress={() => {
-                        if (!isDisabled) {
-                            navigation.navigate('VerificationScreen', { paramKey: number });
-                        }
-                    }}
+                    onPress={sendVerification}
                     style={[styles.button, isDisabled && styles.disabledButton]}
                     disabled={isDisabled}
                 >
