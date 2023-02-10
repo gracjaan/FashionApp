@@ -40,6 +40,7 @@ const PhoneNumberScreen = ({ navigation }) => {
                 <FirebaseRecaptchaVerifierModal
                     ref={recaptchaVerifier}
                     firebaseConfig={firebaseConfig}
+                    size="invisible"
                 />
                 <View style={styles.tinyLogoContainer}>
                     <Image

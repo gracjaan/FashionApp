@@ -19,6 +19,7 @@
     "expo-firebase-recaptcha": "~2.3.1",
     "expo-status-bar": "~1.4.2",
     "firebase": "^9.16.0",
+    "jsdom": "^21.1.0",
     "react": "18.1.0",
     "react-native": "0.70.5",
     "react-native-appearance": "^0.3.4",
