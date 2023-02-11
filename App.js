@@ -10,6 +10,7 @@ import PhoneNumberScreen from './screens/PhoneNumberScreen';
 import VerificationScreen from './screens/VerificationScreen';
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import ProfileScreen from './screens/ProfileScreen';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC0dquOYSr3_F0hhpIZMct_Vhpxq0-8Ly0",
@@ -32,12 +33,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-      <Stack.Screen options={{ headerShown: false }} name="WelcomeScreen" component={WelcomeScreen} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen options={{ headerShown: false }} name="WelcomeScreen" component={WelcomeScreen} />
         <Stack.Screen options={{ headerShown: false }} name="DateInputScreen" component={DateInputScreen} />
         <Stack.Screen options={{ headerShown: false }} name="PhoneNumberScreen" component={PhoneNumberScreen} />
         <Stack.Screen options={{ headerShown: false }} name="VerificationScreen" component={VerificationScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="LoginScreen" component={LoginScreen} />
-        <Stack.Screen name="Home" component={RegisterScreen} />
       </Stack.Navigator>
     </NavigationContainer>
 

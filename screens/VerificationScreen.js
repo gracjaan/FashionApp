@@ -2,7 +2,7 @@ import { StyleSheet, Image, View, TextInput, SafeAreaView, Text, KeyboardAvoidin
 import React, { useState, useRef, useEffect } from 'react'
 import firebase from 'firebase/compat/app';
 
-const VerificationScreen = ({ route }) => {
+const VerificationScreen = ({ navigation , route }) => {
 
     const verificationId = route.params.vid;
 
@@ -27,6 +27,7 @@ const VerificationScreen = ({ route }) => {
         Alert.alert(
             'Login successful. Welcome to dashboard'
         );
+        navigation.navigate('ProfileScreen')
     }
 
     const oneInput = useRef(null)
@@ -76,6 +77,7 @@ const VerificationScreen = ({ route }) => {
     const handlePress = () => {
         if (one.length === 1 && two.length === 1 && three.length === 1 && four.length === 1) {
             //navigate to next screen
+            navigation.navigate('ProfileScreen')
         } else {
             alert('Please enter a valid date')
         }
