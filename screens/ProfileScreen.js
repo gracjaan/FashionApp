@@ -2,7 +2,7 @@ import { View, SafeAreaView, StyleSheet, Button, Image, Text, TextInput } from '
 import { Header, Avatar } from 'react-native-elements';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useEffect, useRef } from 'react'
-import {Divider} from '@rneui/themed'
+import { Divider } from '@rneui/themed'
 
 const ProfileScreen = (navigation, route) => {
     const [fullname, setFullname] = useState('')
@@ -55,7 +55,7 @@ const ProfileScreen = (navigation, route) => {
                     )}
                 </View>
                 <View>
-                <Divider style={{margin: 10, marginTop: 80}}/>
+                    <Divider style={{ margin: 10, marginTop: 80 }} />
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                         <Text style={styles.firstColumn}>Full name</Text>
                         <TextInput
@@ -67,7 +67,7 @@ const ProfileScreen = (navigation, route) => {
                             placeholderTextColor={'grey'}
                         />
                     </View>
-                    <Divider style={{margin: 10,}}/>
+                    <Divider style={{ margin: 10, }} />
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                         <Text style={styles.firstColumn}>Username</Text>
                         <TextInput
@@ -79,7 +79,7 @@ const ProfileScreen = (navigation, route) => {
                             placeholderTextColor={'grey'}
                         />
                     </View>
-                    <Divider style={{margin: 10,}}/>
+                    <Divider style={{ margin: 10, }} />
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                         <Text style={styles.firstColumn}>Bio</Text>
                         <TextInput
@@ -91,7 +91,7 @@ const ProfileScreen = (navigation, route) => {
                             placeholderTextColor={'grey'}
                         />
                     </View>
-                    <Divider style={{margin: 10, marginTop: 80}}/>
+                    <Divider style={{ margin: 10, marginTop: 80 }} />
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                         <Text style={styles.firstColumn}>Location</Text>
                         <TextInput
@@ -103,7 +103,7 @@ const ProfileScreen = (navigation, route) => {
                             placeholderTextColor={'grey'}
                         />
                     </View>
-                    <Divider style={{margin: 10,}}/>
+                    <Divider style={{ margin: 10, }} />
                 </View>
             </SafeAreaView>
         </View>
