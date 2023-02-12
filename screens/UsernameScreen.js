@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View, Image, SafeAreaView, TextInput, TouchableOpacity, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, { useState } from 'react'
 
-const WelcomeScreen = ({ navigation }) => {
-  const [name, setName] = useState('')
-  const isDisabled = name.length < 4;
+const UsernameScreen = ({ navigation }) => {
+  const [username, setUsername] = useState('')
+  const isDisabled = username.length < 4;
   return (
 
     <SafeAreaView style={{ flex: 1, backgroundColor: 'black', justifyContent: 'flex-end', alignContent: 'center' }} >
@@ -18,13 +18,13 @@ const WelcomeScreen = ({ navigation }) => {
             />
           </View>
           <View style={styles.headerContainer}>
-            <Text style={[styles.header, { marginTop: 40, }]}>hi, let's get started!</Text>
-            <Text style={styles.header}>what's your name?</Text>
+            <Text style={[styles.header, { marginTop: 40, }]}>lovely!</Text>
+            <Text style={styles.header}>how should we call u?</Text>
             <TextInput
               placeholder="your name"
               placeholderTextColor="#434343"
-              onChange={text => setName(text)}
-              value={name}
+              onChange={text => setUsername(text)}
+              value={username}
               style={styles.input}
 
             />
@@ -33,7 +33,7 @@ const WelcomeScreen = ({ navigation }) => {
             <TouchableOpacity
               onPress={() => {
                 if (!isDisabled) {
-                  navigation.navigate('UsernameScreen');
+                  navigation.navigate('DateInputScreen');
                 }
               }}
               style={[styles.button, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}
@@ -49,7 +49,7 @@ const WelcomeScreen = ({ navigation }) => {
   )
 }
 
-export default WelcomeScreen;
+export default UsernameScreen;
 
 const styles = StyleSheet.create({
   container: {
