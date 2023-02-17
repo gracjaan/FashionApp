@@ -39,7 +39,7 @@ const NewScreen = () => {
                 rightComponent={{ text: 'Save', style: styles.headerRight }}
             />
             <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={10}>
-                <ScrollView>
+                <ScrollView directionalLockEnabled={true}>
                     <View style={styles.tinyImage}>
                         {image && (
                             <Avatar
