@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Button } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import RegisterScreen from './screens/RegisterScreen';
@@ -13,6 +13,7 @@ import { getAuth } from "firebase/auth";
 import ProfileScreen from './screens/ProfileScreen';
 import UsernameScreen from './screens/UsernameScreen';
 import NewScreen from './screens/NewScreen';
+import ProfileCardScreen from './screens/ProfileCardScreen';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC0dquOYSr3_F0hhpIZMct_Vhpxq0-8Ly0",
@@ -35,6 +36,27 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        <Stack.Screen options={{
+          headerTitle: 'Gracjan',
+          headerTransparent: true,
+          headerTitleStyle: { color: 'white' },
+          headerLeft: () => (
+            <Button
+              onPress={() => alert('This is a button!')}
+              title="Back"
+              color="#fff"
+            />
+          ),
+          headerRight: () => (
+            <Button
+              onPress={() => alert('This is a button!')}
+              title="Info"
+              color="#fff"
+            />
+          )
+        }}
+          name="ProfileCardScreen"
+          component={ProfileCardScreen} />
         <Stack.Screen options={{ headerShown: false }} name="NewScreen" component={NewScreen} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen options={{ headerShown: false }} name="WelcomeScreen" component={WelcomeScreen} />
