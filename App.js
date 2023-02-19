@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, Text, View, Button, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import RegisterScreen from './screens/RegisterScreen';
@@ -14,6 +14,8 @@ import ProfileScreen from './screens/ProfileScreen';
 import UsernameScreen from './screens/UsernameScreen';
 import NewScreen from './screens/NewScreen';
 import ProfileCardScreen from './screens/ProfileCardScreen';
+import NameScreen from './screens/NameScreen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC0dquOYSr3_F0hhpIZMct_Vhpxq0-8Ly0",
@@ -30,12 +32,25 @@ const auth = getAuth(app);
 auth.languageCode = 'en';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 
 export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+      <Stack.Screen options={{
+          headerTitle: () => (
+            <Image
+              source={require('/Users/gracjanchmielnicki/newApp/assets/end-logo.png')}
+              style={{ width: 80, height: 30, resizeMode: 'contain' }}
+            />
+          ),
+          headerTransparent: true,
+          headerTitleStyle: { color: 'white' },
+        }}
+          name="NameScreen"
+          component={NameScreen} />
         <Stack.Screen options={{
           headerTitle: 'Gracjan',
           headerTransparent: true,
@@ -60,7 +75,7 @@ export default function App() {
         <Stack.Screen options={{ headerShown: false }} name="NewScreen" component={NewScreen} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen options={{ headerShown: false }} name="WelcomeScreen" component={WelcomeScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="UsernameScreen" component={UsernameScreen} />
+        <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name="UsernameScreen" component={UsernameScreen} />
         <Stack.Screen options={{ headerShown: false }} name="DateInputScreen" component={DateInputScreen} />
         <Stack.Screen options={{ headerShown: false }} name="PhoneNumberScreen" component={PhoneNumberScreen} />
         <Stack.Screen options={{ headerShown: false }} name="VerificationScreen" component={VerificationScreen} />
