@@ -12,10 +12,10 @@ const PhoneScreen = ({ navigation }) => {
     const isDisabled = !phoneInput.current?.isValidNumber(value);
     const [verificationId, setVerificationId] = useState();
     const recaptchaVerifier = useRef(null);
-    
+
     useEffect(() => {
         if (verificationId) {
-            navigation.navigate('VerificationScreen', {
+            navigation.navigate('OtpScreen', {
                 paramKey: formattedValue,
                 vid: verificationId
             });
@@ -124,5 +124,11 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: 'white',
 
+    },
+    recaptchaView: {
+        backgroundColor: 'black',
+        borderRadius: 10,
+        padding: 10,
+        margin: 10,
     },
 })

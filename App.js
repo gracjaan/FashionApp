@@ -17,6 +17,7 @@ import ProfileCardScreen from './screens/ProfileCardScreen';
 import NameScreen from './screens/NameScreen';
 import DateScreen from './screens/DateScreen';
 import PhoneScreen from './screens/PhoneScreen';
+import OtpScreen from './screens/OtpScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const firebaseConfig = {
@@ -54,10 +55,15 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={defaultHeaderOptions}>
-        <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
-        <Stack.Screen name="DateScreen" component={DateScreen} />
         <Stack.Screen name="NameScreen" component={NameScreen} />
         <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
+        <Stack.Screen name="DateScreen" component={DateScreen} />
+        <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
+        <Stack.Screen name="OtpScreen" component={OtpScreen} />
+
+
+
+
         <Stack.Screen options={{
           headerTitle: 'Gracjan',
           headerTransparent: true,

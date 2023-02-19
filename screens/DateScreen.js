@@ -44,6 +44,7 @@ const DateScreen = ({navigation}) => {
                                 style={styles.inputText}
                                 autoFocus={true}
                                 keyboardType='numeric'
+                                keyboardAppearance='dark'
                                 onKeyPress={({ nativeEvent }) => {
                                     if (day.length === 2 && nativeEvent.key != 'Backspace') {
                                         setMonth(nativeEvent.key);
@@ -62,6 +63,7 @@ const DateScreen = ({navigation}) => {
                                 value={month}
                                 style={styles.inputText}
                                 keyboardType='numeric'
+                                keyboardAppearance='dark'
                                 onKeyPress={({ nativeEvent }) => {
                                     if (nativeEvent.key === 'Backspace' && month.length === 0) {
                                         dayInput.current.focus();
@@ -83,6 +85,7 @@ const DateScreen = ({navigation}) => {
                                 value={year}
                                 style={styles.inputText}
                                 keyboardType='numeric'
+                                keyboardAppearance='dark'
                                 onKeyPress={({ nativeEvent }) => {
                                     if (nativeEvent.key === 'Backspace' && year.length === 0) {
                                         monthInput.current.focus();
@@ -95,7 +98,7 @@ const DateScreen = ({navigation}) => {
                         <TouchableOpacity
                             onPress={() => {
                                 if (!isDisabled) {
-                                    navigation.navigate('UsernameScreen');
+                                    navigation.navigate('PhoneScreen');
                                 }
                             }}
                             style={[styles.continue, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}

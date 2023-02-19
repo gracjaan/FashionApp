@@ -20,6 +20,7 @@ const NameScreen = ({navigation}) => {
                             value={name}
                             style={styles.inputText}
                             autoFocus={true}
+                            keyboardAppearance='dark'
                         />
                     </View>
                     <View style={styles.buttonView}>

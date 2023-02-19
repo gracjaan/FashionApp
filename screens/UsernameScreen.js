@@ -20,13 +20,14 @@ const UsernameScreen = ({navigation}) => {
                             value={username}
                             style={styles.inputText}
                             autoFocus={true}
+                            keyboardAppearance='dark'
                         />
                     </View>
                     <View style={styles.buttonView}>
                         <TouchableOpacity
                             onPress={() => {
                                 if (!isDisabled) {
-                                    navigation.navigate('DateInputScreen');
+                                    navigation.navigate('DateScreen');
                                 }
                             }}
                             style={[styles.continue, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}
