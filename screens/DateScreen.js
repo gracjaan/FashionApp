@@ -1,7 +1,7 @@
 import { View, Text, SafeAreaView, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState, useRef } from 'react'
 
-const DateScreen = () => {
+const DateScreen = ({navigation}) => {
     const [day, setDay] = useState('')
     const [month, setMonth] = useState('')
     const [year, setYear] = useState('')
