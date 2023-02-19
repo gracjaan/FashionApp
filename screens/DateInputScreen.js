@@ -22,11 +22,16 @@ const DateInputScreen = ({ navigation, route }) => {
     }
 
     const handleMonthChange = (text) => {
-        setMonth(text)
-        if (text.length === 2) {
-            yearInput.current.focus()
+        setMonth(text);
+      
+        if (text.length === 0 && monthInput.current) {
+          // If the month input is empty and backspace is pressed, focus on day input
+          dayInput.current.focus();
+        } else if (text.length === 2 && yearInput.current) {
+          // If the month input is complete, focus on year input
+          yearInput.current.focus();
         }
-    }
+      }
 
     const handlePress = () => {
         if (day.length === 2 && month.length === 2 && year.length === 4) {

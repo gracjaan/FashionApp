@@ -15,6 +15,7 @@ import UsernameScreen from './screens/UsernameScreen';
 import NewScreen from './screens/NewScreen';
 import ProfileCardScreen from './screens/ProfileCardScreen';
 import NameScreen from './screens/NameScreen';
+import DateScreen from './screens/DateScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const firebaseConfig = {
@@ -34,23 +35,27 @@ auth.languageCode = 'en';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+const defaultHeaderOptions = {
+  headerTitle: () => (
+    <Image
+      source={require('/Users/gracjanchmielnicki/newApp/assets/end-logo.png')}
+      style={{ width: 80, height: 30, resizeMode: 'contain' }}
+    />
+  ),
+  headerTransparent: true,
+  headerTitleStyle: { color: 'white' },
+  gestureEnabled: false,
+  headerBackVisible: false,
+};
+
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-      <Stack.Screen options={{
-          headerTitle: () => (
-            <Image
-              source={require('/Users/gracjanchmielnicki/newApp/assets/end-logo.png')}
-              style={{ width: 80, height: 30, resizeMode: 'contain' }}
-            />
-          ),
-          headerTransparent: true,
-          headerTitleStyle: { color: 'white' },
-        }}
-          name="NameScreen"
-          component={NameScreen} />
+      <Stack.Navigator screenOptions={defaultHeaderOptions}>
+        <Stack.Screen name="DateScreen" component={DateScreen} />
+        <Stack.Screen name="NameScreen" component={NameScreen} />
+        <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
         <Stack.Screen options={{
           headerTitle: 'Gracjan',
           headerTransparent: true,
@@ -75,7 +80,6 @@ export default function App() {
         <Stack.Screen options={{ headerShown: false }} name="NewScreen" component={NewScreen} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen options={{ headerShown: false }} name="WelcomeScreen" component={WelcomeScreen} />
-        <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} name="UsernameScreen" component={UsernameScreen} />
         <Stack.Screen options={{ headerShown: false }} name="DateInputScreen" component={DateInputScreen} />
         <Stack.Screen options={{ headerShown: false }} name="PhoneNumberScreen" component={PhoneNumberScreen} />
         <Stack.Screen options={{ headerShown: false }} name="VerificationScreen" component={VerificationScreen} />
