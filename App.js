@@ -2,15 +2,15 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import RegisterScreen from './screens/RegisterScreen';
-import LoginScreen from './screens/LoginScreen';
-import WelcomeScreen from './screens/WelcomeScreen';
-import DateInputScreen from './screens/DateInputScreen';
-import PhoneNumberScreen from './screens/PhoneNumberScreen';
-import VerificationScreen from './screens/VerificationScreen';
+import RegisterScreen from './old_screens/RegisterScreen';
+import LoginScreen from './old_screens/LoginScreen';
+import WelcomeScreen from './old_screens/WelcomeScreen';
+import DateInputScreen from './old_screens/DateInputScreen';
+import PhoneNumberScreen from './old_screens/PhoneNumberScreen';
+import VerificationScreen from './old_screens/VerificationScreen';
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import ProfileScreen from './screens/ProfileScreen';
+import ProfileScreen from './old_screens/ProfileScreen';
 import UsernameScreen from './screens/UsernameScreen';
 import NewScreen from './screens/NewScreen';
 import ProfileCardScreen from './screens/ProfileCardScreen';
@@ -60,10 +60,7 @@ export default function App() {
         <Stack.Screen name="DateScreen" component={DateScreen} />
         <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
         <Stack.Screen name="OtpScreen" component={OtpScreen} />
-
-
-
-
+        <Stack.Screen options={{ headerShown: false }} name="NewScreen" component={NewScreen} />
         <Stack.Screen options={{
           headerTitle: 'Gracjan',
           headerTransparent: true,
@@ -85,12 +82,6 @@ export default function App() {
         }}
           name="ProfileCardScreen"
           component={ProfileCardScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="NewScreen" component={NewScreen} />
-        <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
-        <Stack.Screen options={{ headerShown: false }} name="WelcomeScreen" component={WelcomeScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="DateInputScreen" component={DateInputScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="PhoneNumberScreen" component={PhoneNumberScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="VerificationScreen" component={VerificationScreen} />
       </Stack.Navigator>
     </NavigationContainer>
 
