@@ -11,3 +11,5 @@ In progress ...
 - [ ] Change arrow next to flag in PhoneScreen from black to white
 - [ ] Try to make reCaptcha invisible
 - [ ] Stop hiding keyboard in OtpScreen
+- [ ] Change font of tabview in ProfileCardScreen and consider changing it to react native navigation component
+

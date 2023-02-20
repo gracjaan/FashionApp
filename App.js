@@ -14,6 +14,7 @@ import OtpScreen from './screens/OtpScreen';
 import FeedScreen from './screens/FeedScreen';
 import SearchScreen from './screens/SearchScreen';
 import AddPostScreen from './screens/AddPostScreen';
+import HighlightsScreen from './screens/HighlightsScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
@@ -67,6 +68,8 @@ function Home() {
             iconName = 'search';
           } else if (route.name === 'AddPostScreen') {
             iconName = 'md-add-circle';
+          } else if (route.name === 'HighlightsScreen') {
+            iconName = 'md-reorder-four';
           }
 
           // return the icon component with the appropriate name and style
@@ -78,6 +81,7 @@ function Home() {
       <Tab.Screen name='FeedScreen' component={FeedScreen} />
       <Tab.Screen name='SearchScreen' component={SearchScreen} />
       <Tab.Screen name='AddPostScreen' component={AddPostScreen} />
+      <Tab.Screen name='HighlightsScreen' component={HighlightsScreen} />
       <Tab.Screen name='ProfileCardScreen' component={ProfileCardScreen} />
     </Tab.Navigator>
   );
