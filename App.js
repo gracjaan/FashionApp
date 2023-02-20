@@ -2,15 +2,8 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import RegisterScreen from './old_screens/RegisterScreen';
-import LoginScreen from './old_screens/LoginScreen';
-import WelcomeScreen from './old_screens/WelcomeScreen';
-import DateInputScreen from './old_screens/DateInputScreen';
-import PhoneNumberScreen from './old_screens/PhoneNumberScreen';
-import VerificationScreen from './old_screens/VerificationScreen';
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import ProfileScreen from './old_screens/ProfileScreen';
 import UsernameScreen from './screens/UsernameScreen';
 import NewScreen from './screens/NewScreen';
 import ProfileCardScreen from './screens/ProfileCardScreen';
@@ -18,6 +11,7 @@ import NameScreen from './screens/NameScreen';
 import DateScreen from './screens/DateScreen';
 import PhoneScreen from './screens/PhoneScreen';
 import OtpScreen from './screens/OtpScreen';
+import FeedScreen from './screens/FeedScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const firebaseConfig = {
@@ -48,7 +42,31 @@ const defaultHeaderOptions = {
   headerTitleStyle: { color: 'white' },
   gestureEnabled: false,
   headerBackVisible: false,
+  tabBarActiveTintColor: "white",
+  tabBarInactiveTintColor: "gray",
+  tabBarStyle:
+  {
+    display: "flex",
+    backgroundColor: 'black',
+    borderWidth: 2,
+  },
 };
+
+function Home() {
+  return (
+    <Tab.Navigator
+      screenOptions={defaultHeaderOptions}
+      tabBarOptions={{
+        style: { backgroundColor: 'black' },
+        activeTintColor: 'white',
+        inactiveTintColor: 'gray'
+      }}
+    >
+      <Tab.Screen name='FeedScreen' component={FeedScreen} />
+      <Tab.Screen name='NewScreen' component={NewScreen} />
+    </Tab.Navigator>
+  );
+}
 
 
 export default function App() {
@@ -60,7 +78,7 @@ export default function App() {
         <Stack.Screen name="DateScreen" component={DateScreen} />
         <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
         <Stack.Screen name="OtpScreen" component={OtpScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="NewScreen" component={NewScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
         <Stack.Screen options={{
           headerTitle: 'Gracjan',
           headerTransparent: true,

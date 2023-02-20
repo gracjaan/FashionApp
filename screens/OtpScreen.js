@@ -15,7 +15,7 @@ const OtpScreen = ({ navigation, route }) => {
         );
         firebase.auth().signInWithCredential(credential)
             .then(() => {
-                navigation.navigate('NewScreen')
+                navigation.navigate('Home')
             })
             .catch((error) => {
                 //show an alert

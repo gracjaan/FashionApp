@@ -32,12 +32,7 @@ const NewScreen = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'black' }}>
-            <Header
-                backgroundColor='black'
-                centerComponent={{ text: 'Profile', style: styles.headerCenter }}
-                rightComponent={{ text: 'Save', style: styles.headerRight }}
-            />
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'black', }}>    
             <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={10}>
                 <ScrollView directionalLockEnabled={true}>
                     <View style={styles.tinyImage}>
@@ -109,7 +104,7 @@ const NewScreen = () => {
             </KeyboardAvoidingView>
 
 
-        </View>
+        </SafeAreaView>
     )
 }
 
@@ -120,6 +115,7 @@ const styles = StyleSheet.create({
         flex: 1,
         //justifyContent: 'center',
         alignItems: 'center',
+        marginTop: 40
     },
     text: {
         color: 'white',
