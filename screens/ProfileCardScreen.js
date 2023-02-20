@@ -89,7 +89,8 @@ const styles = StyleSheet.create({
     },
     avatar: {
         alignItems: 'center',
-        margin: 20,
+        marginBottom: 20,
+        marginTop: 70,
     },
     text: {
         color: 'white',

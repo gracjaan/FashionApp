@@ -12,7 +12,9 @@ import DateScreen from './screens/DateScreen';
 import PhoneScreen from './screens/PhoneScreen';
 import OtpScreen from './screens/OtpScreen';
 import FeedScreen from './screens/FeedScreen';
+import SearchScreen from './screens/SearchScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC0dquOYSr3_F0hhpIZMct_Vhpxq0-8Ly0",
@@ -42,28 +44,37 @@ const defaultHeaderOptions = {
   headerTitleStyle: { color: 'white' },
   gestureEnabled: false,
   headerBackVisible: false,
-  tabBarActiveTintColor: "white",
-  tabBarInactiveTintColor: "gray",
-  tabBarStyle:
-  {
-    display: "flex",
-    backgroundColor: 'black',
-    borderWidth: 2,
-  },
+
 };
 
 function Home() {
   return (
     <Tab.Navigator
-      screenOptions={defaultHeaderOptions}
-      tabBarOptions={{
-        style: { backgroundColor: 'black' },
-        activeTintColor: 'white',
-        inactiveTintColor: 'gray'
-      }}
+      screenOptions={({ route }) => ({
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: "white",
+        tabBarInactiveTintColor: "gray",
+        tabBarStyle: { display: "flex", backgroundColor: 'black', borderTopColor: 'transparent' },
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+
+          if (route.name === 'FeedScreen') {
+            iconName = 'home';
+          } else if (route.name === 'ProfileCardScreen') {
+            iconName = 'person';
+          } else if (route.name === 'SearchScreen') {
+            iconName = 'search';
+          }
+
+          // return the icon component with the appropriate name and style
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        ...defaultHeaderOptions // add the default header options
+      })}
     >
       <Tab.Screen name='FeedScreen' component={FeedScreen} />
-      <Tab.Screen name='NewScreen' component={NewScreen} />
+      <Tab.Screen name='SearchScreen' component={SearchScreen} />
+      <Tab.Screen name='ProfileCardScreen' component={ProfileCardScreen} />
     </Tab.Navigator>
   );
 }
@@ -79,27 +90,6 @@ export default function App() {
         <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
         <Stack.Screen name="OtpScreen" component={OtpScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
-        <Stack.Screen options={{
-          headerTitle: 'Gracjan',
-          headerTransparent: true,
-          headerTitleStyle: { color: 'white' },
-          headerLeft: () => (
-            <Button
-              onPress={() => alert('This is a button!')}
-              title="Back"
-              color="#fff"
-            />
-          ),
-          headerRight: () => (
-            <Button
-              onPress={() => alert('This is a button!')}
-              title="Info"
-              color="#fff"
-            />
-          )
-        }}
-          name="ProfileCardScreen"
-          component={ProfileCardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
 
