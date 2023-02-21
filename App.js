@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import UsernameScreen from './screens/UsernameScreen';
 import NewScreen from './screens/NewScreen';
 import ProfileCardScreen from './screens/ProfileCardScreen';
@@ -30,6 +31,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 auth.languageCode = 'en';
 
 const Stack = createNativeStackNavigator();

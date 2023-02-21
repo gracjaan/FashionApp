@@ -18,7 +18,6 @@ const SearchScreen = () => {
                 onChangeText={text => setSearch(text)}
                 value={search}
                 style={styles.inputText}
-                autoFocus={true}
                 keyboardAppearance='dark'
               />
             </View>
