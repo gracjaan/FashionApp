@@ -89,6 +89,5 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderRadius: 10,
         backgroundColor: 'white',
-
     },
 })
