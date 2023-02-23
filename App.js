@@ -48,6 +48,7 @@ const defaultHeaderOptions = {
   headerTitleStyle: { color: 'white' },
   gestureEnabled: false,
   headerBackVisible: false,
+  headerShadowVisible: false
 
 };
 
@@ -77,7 +78,11 @@ function Home() {
           // return the icon component with the appropriate name and style
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        ...defaultHeaderOptions // add the default header options
+        ...defaultHeaderOptions, // add the default header options
+        headerTransparent: false,
+        headerStyle: {
+          backgroundColor: 'black',
+        },
       })}
     >
       <Tab.Screen name='FeedScreen' component={FeedScreen} />

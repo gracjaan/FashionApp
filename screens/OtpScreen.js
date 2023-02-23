@@ -44,6 +44,11 @@ const OtpScreen = ({ navigation, route }) => {
                     />
                     <View style={styles.buttonView}>
                         <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Text style={styles.smallText}>Change phone number</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
                             onPress={confirmCode}
                             style={[styles.continue, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}
                             disabled={isDisabled}
@@ -127,4 +132,11 @@ const styles = StyleSheet.create({
     underlineStyleHighLighted: {
         borderColor: "white",
     },
+    smallText: {
+        color: 'grey',
+        fontSize: 16,
+        fontFamily: 'Helvetica',
+        textAlign: 'center',
+        marginBottom: 20
+    }
 })

@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black'
   },
   imageView: {
-    marginTop: 70,
+    marginTop: 20,
     height: 350,
     width: 350,
     borderWidth: 2,

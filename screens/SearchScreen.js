@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   },
   searchView: {
     height: 60,
-    marginTop: 60,
+    marginTop: 20,
     flexDirection: 'row',
     width: '90%',
     alignSelf: 'center',

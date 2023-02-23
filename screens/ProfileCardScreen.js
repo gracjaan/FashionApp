@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     avatar: {
         alignItems: 'center',
         marginBottom: 20,
-        marginTop: 70,
+        marginTop: 20,
     },
     text: {
         color: 'white',
