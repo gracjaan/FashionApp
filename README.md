@@ -1,6 +1,9 @@
 # DiscussionApp
 In progress ...
 
+## Current State
+App allows users to register via phone number. Furthermore, it has fully working AddPostScreen to add posts to database which are then displayed in FeedScreen to all the users
+
 ## TODO
 
 - [ ] Remove divider from header in ProfileScreen
