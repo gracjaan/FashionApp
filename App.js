@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, Image } from 'react-native';
+import { StyleSheet, Text, View, Button, Image, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { initializeApp } from "firebase/app";
@@ -83,6 +83,17 @@ function Home() {
         headerStyle: {
           backgroundColor: 'black',
         },
+        headerRight: () => {
+          if (route.name === 'AddPostScreen') {
+            return (
+              <TouchableOpacity onPress={()=>console.log('heyy')}>
+                <Text style={{ color: "#434343", marginRight: 10, fontFamily: 'Helvetica', fontSize: 20, fontWeight: 'bold' }}>Reset</Text>
+              </TouchableOpacity>
+            );
+          } else {
+            return null;
+          }
+        }
       })}
     >
       <Tab.Screen name='FeedScreen' component={FeedScreen} />

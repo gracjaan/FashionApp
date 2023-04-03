@@ -3,11 +3,13 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useEffect, useRef } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 const AddPostScreen = () => {
   const [title, setTitle] = useState('')
   const [tags, setTags] = useState('')
   const [description, setDescription] = useState('')
+  const [isImageSelected, setIsImageSelected] = useState(false);
   const [image, setImage] = useState('https://www.shutterstock.com/image-vector/upload-icon-vector-illustration-on-260nw-1909181089.jpg')
 
   const storageRef = firebase.storage().ref();
@@ -40,6 +42,7 @@ const AddPostScreen = () => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+      setIsImageSelected(true);
     }
   };
 
@@ -57,10 +60,19 @@ const AddPostScreen = () => {
         <ScrollView>
           <TouchableOpacity onPress={pickImage}>
             <View style={styles.imageView}>
-              <Image
-                source={{ uri: image }}
-                style={{ height: '100%', width: '100%', borderRadius: 10 }}
-              />
+              {isImageSelected ? (
+                <Image
+                  source={{ uri: image }}
+                  style={{ height: '100%', width: '100%', borderRadius: 10 }}
+                />
+              ) : (
+                <>
+                  <View style={{alignItems: 'center'}}>
+                    <Ionicons name="camera-outline" size={100} color="white" />
+                    <Text style={styles.uploadText}>Upload Photo</Text>
+                  </View>
+                </>
+              )}
             </View>
           </TouchableOpacity>
           <View style={styles.tt}>
@@ -191,5 +203,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'white',
 
+  },
+  uploadText: {
+    color: '#A9A9A9',
+    fontSize: 18,
+    textAlign: 'center',
+    padding: 10,
   },
 })

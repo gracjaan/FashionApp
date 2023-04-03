@@ -29,7 +29,7 @@ const FeedScreen = () => {
     if (!refreshing) {
       setRefreshing(true);
       setIsOverScrollRefreshing(false);
-  
+
       // Fetch the images from the database and update the state here
       const storageRef = firebase.storage().ref();
       storageRef
@@ -47,7 +47,7 @@ const FeedScreen = () => {
         });
     }
   };
-  
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -71,12 +71,15 @@ const FeedScreen = () => {
         }
         renderItem={({ item }) =>
           <View style={styles.cardView}>
-            <View style={styles.topCard}>
-              <View>
-                <Image style={styles.avatar} source={require('/Users/gracjanchmielnicki/newApp/assets/default-user-image.png')} />
+            <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Image style={styles.avatar} source={require('/Users/gracjanchmielnicki/newApp/assets/default-user-image.png')} />
+                  <Text style={styles.nickname}>gracjanchmielnicki</Text>
               </View>
-              <View style={{ marginLeft: 20 }}>
-                <Text style={styles.nickname}>gracjanchmielnicki</Text>
+              <View>
+                <TouchableOpacity>
+                  <Ionicons name={'add'} size={27} color={'white'} />
+                </TouchableOpacity>
               </View>
             </View>
             <View>
@@ -123,19 +126,19 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
   avatar: {
-    height: 50,
-    width: 50,
+    height: 30,
+    width: 30,
     resizeMode: 'contain',
     borderRadius: 100
   },
   cardView: {
-    marginTop: 40,
+    marginBottom: 40,
     width: '100%',
-    height: 600,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: '#434343',
-    backgroundColor: '#1F1F1F',
+    height: 530,
+    //borderRadius: 20,
+    //borderWidth: 2,
+    //borderColor: '#434343',
+    //backgroundColor: '#1F1F1F',
     //justifyContent: 'center',
     alignSelf: 'center',
     //alignItems: 'center',
@@ -150,10 +153,11 @@ const styles = StyleSheet.create({
   },
   nickname: {
     color: 'white',
-    fontSize: 20,
+    fontSize: 17,
     fontFamily: 'Helvetica',
     fontWeight: 'bold',
     textAlign: 'center',
+    marginLeft: 10,
   },
   loadingContainer: {
     alignItems: 'center',

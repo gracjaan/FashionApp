@@ -43,18 +43,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'black'
   },
   searchView: {
-    height: 60,
+    height: 50,
     marginTop: 20,
     flexDirection: 'row',
     width: '90%',
     alignSelf: 'center',
     backgroundColor: '#1F1F1F',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingLeft: 15,
+    paddingRight: 6,
+    //paddingVertical: 10,
     borderRadius: 10,
     borderColor: '#434343',
     borderWidth: 2,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   continue: {
     backgroundColor: 'white',
