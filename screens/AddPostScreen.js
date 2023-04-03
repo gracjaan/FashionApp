@@ -11,6 +11,9 @@ const AddPostScreen = () => {
   const [description, setDescription] = useState('')
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [image, setImage] = useState('https://www.shutterstock.com/image-vector/upload-icon-vector-illustration-on-260nw-1909181089.jpg')
+  const [des, setDes] = useState('')
+  const [top, setTop] = useState('')
+  const [bottom, setBottom] = useState('')
 
   const storageRef = firebase.storage().ref();
 
@@ -56,73 +59,76 @@ const AddPostScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="position">
-        <ScrollView>
-          <TouchableOpacity onPress={pickImage}>
-            <View style={styles.imageView}>
-              {isImageSelected ? (
-                <Image
-                  source={{ uri: image }}
-                  style={{ height: '100%', width: '100%', borderRadius: 10 }}
-                />
-              ) : (
-                <>
-                  <View style={{alignItems: 'center'}}>
-                    <Ionicons name="camera-outline" size={100} color="white" />
-                    <Text style={styles.uploadText}>Upload Photo</Text>
-                  </View>
-                </>
-              )}
+      <KeyboardAvoidingView behavior="position">
+        <TouchableOpacity onPress={pickImage}>
+          <View style={styles.imageView}>
+            {isImageSelected ? (
+              <Image
+                source={{ uri: image }}
+                style={{ height: '100%', width: '100%', borderRadius: 10 }}
+              />
+            ) : (
+              <>
+                <View style={{ alignItems: 'center' }}>
+                  <Ionicons name="camera-outline" size={100} color="white" />
+                  <Text style={styles.uploadText}>Upload Photo</Text>
+                </View>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+        <View style={{height: 100, marginTop: 50}}>
+          <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
+            <View style={{ flexBasis: 150 }}>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Top</Text>
             </View>
+            <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
+              <TextInput
+                style={styles.secondColumn}
+                onChangeText={text => setTop(text)}
+                value={top}
+                placeholder="www.example.com"
+                placeholderTextColor={'grey'}
+              />
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
+            <View style={{ flexBasis: 150 }}>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Bottom</Text>
+            </View>
+            <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
+              <TextInput
+                style={styles.secondColumn}
+                onChangeText={text => setBottom(text)}
+                value={bottom}
+                placeholder="www.example.com"
+                placeholderTextColor={'grey'}
+              />
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
+            <View style={{ flexBasis: 150 }}>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Description</Text>
+            </View>
+            <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
+              <TextInput
+                style={styles.secondColumn}
+                onChangeText={text => setDes(text)}
+                value={des}
+                placeholder="Description"
+                placeholderTextColor={'grey'}
+              />
+            </View>
+          </View>
+        </View>
+        <View style={styles.buttonView}>
+          <TouchableOpacity
+            onPress={onPostButtonPress}
+            style={styles.continue}
+          >
+            <Text style={styles.description}>Post</Text>
           </TouchableOpacity>
-          <View style={styles.tt}>
-            <View style={styles.inputView}>
-              <TextInput
-                maxLength={20}
-                placeholder="Add title"
-                placeholderTextColor="#434343"
-                onChangeText={text => setTitle(text)}
-                value={title}
-                style={styles.inputText}
-                keyboardAppearance='dark'
-              />
-            </View>
-          </View>
-          <View style={styles.tt}>
-            <View style={styles.inputView}>
-              <TextInput
-                maxLength={20}
-                placeholder="Add tags"
-                placeholderTextColor="#434343"
-                onChangeText={text => setTags(text)}
-                value={tags}
-                style={styles.inputText}
-                keyboardAppearance='dark'
-              />
-            </View>
-          </View>
-          <View style={styles.tt}>
-            <View style={styles.descriptionView}>
-              <TextInput
-                multiline
-                placeholder="Add description"
-                placeholderTextColor="#434343"
-                onChangeText={text => setDescription(text)}
-                value={description}
-                style={styles.inputText}
-                keyboardAppearance='dark'
-              />
-            </View>
-          </View>
-          <View style={styles.buttonView}>
-            <TouchableOpacity
-              onPress={onPostButtonPress}
-              style={styles.continue}
-            >
-              <Text style={styles.description}>Post</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
@@ -139,8 +145,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     height: 350,
     width: 350,
-    borderWidth: 2,
-    borderColor: 'white',
+    //borderWidth: 2,
+    //borderColor: 'white',
     alignSelf: 'center',
     borderRadius: 10,
     justifyContent: 'center'
@@ -193,7 +199,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     width: 350,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   continue: {
     height: 60,
@@ -210,4 +216,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 10,
   },
+  secondColumn: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: 'Helvetica',
+    fontWeight: 'bold',
+  }
 })
