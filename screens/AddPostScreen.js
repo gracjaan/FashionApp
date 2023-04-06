@@ -89,6 +89,7 @@ const AddPostScreen = () => {
                 value={top}
                 placeholder="www.example.com"
                 placeholderTextColor={'grey'}
+                keyboardAppearance='dark'
               />
             </View>
           </View>
@@ -103,6 +104,7 @@ const AddPostScreen = () => {
                 value={bottom}
                 placeholder="www.example.com"
                 placeholderTextColor={'grey'}
+                keyboardAppearance='dark'
               />
             </View>
           </View>
@@ -117,6 +119,7 @@ const AddPostScreen = () => {
                 value={des}
                 placeholder="Description"
                 placeholderTextColor={'grey'}
+                keyboardAppearance='dark'
               />
             </View>
           </View>

@@ -1,5 +1,6 @@
 import { View, Text, SafeAreaView, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState, useRef } from 'react'
+import store from '../redux/store'
 
 const DateScreen = ({navigation}) => {
     const [day, setDay] = useState('')
@@ -98,6 +99,8 @@ const DateScreen = ({navigation}) => {
                         <TouchableOpacity
                             onPress={() => {
                                 if (!isDisabled) {
+                                    store.dispatch({ type: 'UPDATE_DATE_OF_BIRTH', payload: { day, month, year } })
+                                    console.log(store.getState())
                                     navigation.navigate('PhoneScreen');
                                 }
                             }}

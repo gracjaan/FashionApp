@@ -1,5 +1,6 @@
 import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, TextInput, Keyboard, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
+import store from '../redux/store'
 
 const NameScreen = ({navigation}) => {
     const [name, setName] = useState('')
@@ -27,6 +28,8 @@ const NameScreen = ({navigation}) => {
                         <TouchableOpacity
                             onPress={() => {
                                 if (!isDisabled) {
+                                    store.dispatch({ type: 'UPDATE_NAME', payload: name })
+                                    console.log(store.getState())
                                     navigation.navigate('UsernameScreen');
                                 }
                             }}

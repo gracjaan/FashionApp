@@ -2,11 +2,34 @@ import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWi
 import React, { useState } from 'react'
 import OTPInputView from '@twotalltotems/react-native-otp-input'
 import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
+import 'firebase/auth';
+import store from '../redux/store';
+import { useSelector } from 'react-redux';
 
 const OtpScreen = ({ navigation, route }) => {
     const verificationId = route.params.vid;
     const [codeInput, setCodeInput] = useState('');
     const isDisabled = codeInput.length < 6;
+
+    const addUserToFirestore = (uid) => {
+        const state = store.getState(); // Access the current state of the Redux store
+        const { name, username, dateOfBirth, profilePicture } = state.user; // Destructure the values from the user reducer
+
+        firebase.firestore().collection('users').doc(uid).set({
+            name: name,
+            username: username,
+            dateOfBirth: dateOfBirth,
+            profilePicture: profilePicture,
+        })
+            .then(() => {
+                console.log('User added to Firestore successfully!');
+            })
+            .catch((error) => {
+                console.error('Error adding user to Firestore:', error);
+            });
+    };
 
     const confirmCode = () => {
         const credential = firebase.auth.PhoneAuthProvider.credential(
@@ -15,6 +38,11 @@ const OtpScreen = ({ navigation, route }) => {
         );
         firebase.auth().signInWithCredential(credential)
             .then(() => {
+                //add user to firestore
+                store.dispatch({ type: 'UPDATE_UID', payload: firebase.auth().currentUser.uid })
+                const state = store.getState();
+                console.log(store.getState());
+                addUserToFirestore(firebase.auth().currentUser.uid);
                 navigation.navigate('Home')
             })
             .catch((error) => {
