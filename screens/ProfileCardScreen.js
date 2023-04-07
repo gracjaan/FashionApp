@@ -1,7 +1,11 @@
 import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Header, Avatar } from 'react-native-elements';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
+import 'firebase/auth';
 
 const FirstRoute = () => (
     <View style={{ flex: 1, backgroundColor: 'black' }} />
@@ -45,13 +49,34 @@ const ProfileCardScreen = () => {
         />
     );
 
+    const [profilePicture, setProfilePicture] = useState('');
+
+    useEffect(() => {
+        // Fetch the user's profile picture from Firebase
+        const fetchProfilePicture = async () => {
+            try {
+                const user = firebase.auth().currentUser; // Get the current user
+                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get(); // Fetch the user's document from the 'users' collection
+                if (userDoc.exists) {
+                    const userData = userDoc.data(); // Get the data from the user's document
+                    const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
+                    setProfilePicture(profilePictureUrl); // Update the state with the retrieved URL
+                }
+            } catch (error) {
+                console.error('Error fetching profile picture:', error);
+            }
+        };
+
+        fetchProfilePicture(); // Call the fetchProfilePicture function
+    }, []);
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.avatar}>
                 <Avatar
                     size='xlarge'
                     rounded
-                    source={{ uri: 'https://cdn.landesa.org/wp-content/uploads/default-user-image.png' }}
+                    source={{ uri: profilePictureç }}
                     title="Bj"
                     containerStyle={{ backgroundColor: 'grey' }}
                 >
