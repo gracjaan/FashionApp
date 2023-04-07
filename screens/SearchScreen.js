@@ -1,14 +1,26 @@
-import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, FlatList, Image } from 'react-native'
 import React, { useState } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import firebase from 'firebase/compat/app';
 
 const SearchScreen = () => {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState('');
+  const [users, setUsers] = useState([]);
+
+  const searchUsers = async () => {
+    try {
+      const snapshot = await firebase.firestore().collection('users').where('username', '>=', search).get();
+      const userData = snapshot.docs.map(doc => doc.data());
+      setUsers(userData);
+    } catch (error) {
+      console.log('Error searching users:', error);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss() }}>
-        <View style={{ flex: 1, }}>
+        <View style={{ flex: 1 }}>
           <View style={styles.searchView}>
             <View style={styles.inputView}>
               <TextInput
@@ -21,14 +33,25 @@ const SearchScreen = () => {
                 keyboardAppearance='dark'
               />
             </View>
-            <View>
-              <TouchableOpacity
-                style={styles.continue}
-              >
-                <Ionicons name={'arrow-forward'} size={30} />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.continue}
+              onPress={searchUsers} // Call searchUsers function on button press
+            >
+              <Ionicons name={'arrow-forward'} size={30} />
+            </TouchableOpacity>
           </View>
+          <FlatList
+            data={users}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.userItem}>
+                {item.profilePicture && (
+                  <Image source={{ uri: item.profilePicture }} style={styles.avatar} /> // Render avatar if available
+                )}
+                <Text style={styles.username}>{item.username}</Text>
+              </View>
+            )}
+          />
         </View>
       </TouchableWithoutFeedback>
     </SafeAreaView>
@@ -36,6 +59,7 @@ const SearchScreen = () => {
 }
 
 export default SearchScreen
+
 
 const styles = StyleSheet.create({
   container: {
@@ -74,5 +98,26 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'Helvetica',
     fontWeight: 'bold',
+  },
+  avatar: {
+    height: 30,
+    width: 30,
+    resizeMode: 'contain',
+    borderRadius: 100,
+    marginRight: 10
+  },
+  username: {
+    color: 'white',
+    fontSize: 18,
+    fontFamily: 'Helvetica',
+  },
+  userItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#434343',
+    marginTop: 10,
   },
 })

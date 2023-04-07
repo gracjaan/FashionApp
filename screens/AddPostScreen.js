@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useEffect, useRef } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
+import 'firebase/compat/firestore';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 const AddPostScreen = () => {
@@ -27,6 +28,22 @@ const AddPostScreen = () => {
       await imageRef.put(blob);
       const downloadUrl = await imageRef.getDownloadURL();
       console.log(`Image uploaded to Firebase: ${downloadUrl}`);
+
+      // Generate a postId
+      const postId = firebase.firestore().collection('posts').doc().id;
+
+      // Add relevant data to Firestore database
+      await firebase.firestore().collection('posts').doc(postId).set({
+        postId: postId, // Use the generated postId
+        uid: firebase.auth().currentUser.uid, // Replace with the user ID
+        description: description, // Replace with the description state value
+        toplink: top, // Replace with the top state value
+        bottomlink: bottom, // Replace with the bottom state value
+        likes: 0, // Initial likes value
+        comments: [], // Empty array for comments
+        imageUrl: downloadUrl, // URL of the uploaded image
+      });
+
       return downloadUrl;
     } catch (error) {
       console.error('Error uploading image to Firebase:', error);
@@ -77,7 +94,7 @@ const AddPostScreen = () => {
             )}
           </View>
         </TouchableOpacity>
-        <View style={{height: 100, marginTop: 50}}>
+        <View style={{ height: 100, marginTop: 50 }}>
           <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
             <View style={{ flexBasis: 150 }}>
               <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Top</Text>

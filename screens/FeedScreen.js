@@ -3,78 +3,41 @@ import React, { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchPosts } from '../redux/postsSlice';
+import { Provider } from 'react-redux';
 
 const FeedScreen = () => {
-  const [images, setImages] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [isOverScrollRefreshing, setIsOverScrollRefreshing] = useState(false);
+  const dispatch = useDispatch();
+  const postsData = useSelector(state => state.posts.postsData);
+  const status = useSelector(state => state.posts.status);
+  const error = useSelector(state => state.posts.error);
 
 
   useEffect(() => {
-    // Initialize Firebase Storage
-    const storageRef = firebase.storage().ref();
-
-    // Get a list of all images in the "images" folder
-    storageRef.child('images').listAll().then(function (result) {
-      result.items.forEach(function (imageRef) {
-        // Get the download URL for each image and add it to the images state
-        imageRef.getDownloadURL().then(function (url) {
-          setImages(images => [...images, { url }]);
-        });
-      });
-    });
+    // Fetch posts data from Redux store
+    dispatch(fetchPosts());
   }, []);
 
-  const handleRefresh = () => {
-    if (!refreshing) {
-      setRefreshing(true);
-      setIsOverScrollRefreshing(false);
+  if (status === 'loading') {
+    return <Text>Loading...</Text>;
+  }
 
-      // Fetch the images from the database and update the state here
-      const storageRef = firebase.storage().ref();
-      storageRef
-        .child('images')
-        .listAll()
-        .then(function (result) {
-          const promises = result.items.map(function (imageRef) {
-            return imageRef.getDownloadURL();
-          });
-          Promise.all(promises).then(function (urls) {
-            setImages(urls.map(url => ({ url })));
-            setRefreshing(false);
-            setIsOverScrollRefreshing(false); // Add this line to hide the loading icon
-          });
-        });
-    }
-  };
-
+  if (status === 'failed') {
+    return <Text>Error: {error}</Text>;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={images}
-        keyExtractor={(item, index) => index.toString()}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-        onScroll={({ nativeEvent }) => {
-          if (nativeEvent.contentOffset.y <= -100) {
-            setIsOverScrollRefreshing(true);
-            handleRefresh();
-          }
-        }}
-        ListHeaderComponent={
-          isOverScrollRefreshing ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color="#ffffff" />
-            </View>
-          ) : null
-        }
+        data={postsData}
+        keyExtractor={item => item.postId}
         renderItem={({ item }) =>
           <View style={styles.cardView}>
             <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image style={styles.avatar} source={require('/Users/gracjanchmielnicki/newApp/assets/default-user-image.png')} />
-                  <Text style={styles.nickname}>gracjanchmielnicki</Text>
+                <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
+                <Text style={styles.nickname}>{item.username}</Text>
               </View>
               <View>
                 <TouchableOpacity>
@@ -83,7 +46,7 @@ const FeedScreen = () => {
               </View>
             </View>
             <View>
-              <Image style={styles.image} source={{ uri: item.url }} />
+              <Image style={styles.image} source={{ uri: item.imageUrl }} />
             </View>
             <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
               <View style={{ flexDirection: 'row' }}>

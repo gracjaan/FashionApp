@@ -16,18 +16,31 @@ const OtpScreen = ({ navigation, route }) => {
     const addUserToFirestore = (uid) => {
         const state = store.getState(); // Access the current state of the Redux store
         const { name, username, dateOfBirth, profilePicture } = state.user; // Destructure the values from the user reducer
-
-        firebase.firestore().collection('users').doc(uid).set({
-            name: name,
-            username: username,
-            dateOfBirth: dateOfBirth,
-            profilePicture: profilePicture,
-        })
-            .then(() => {
-                console.log('User added to Firestore successfully!');
+    
+        // Check if user already exists in Firestore
+        firebase.firestore().collection('users').doc(uid).get()
+            .then((docSnapshot) => {
+                if (docSnapshot.exists) {
+                    console.log('User already exists in Firestore:', docSnapshot.data());
+                    // User already exists, do not add again
+                } else {
+                    // User does not exist, add to Firestore
+                    firebase.firestore().collection('users').doc(uid).set({
+                        name: name,
+                        username: username,
+                        dateOfBirth: dateOfBirth,
+                        profilePicture: profilePicture,
+                    })
+                        .then(() => {
+                            console.log('User added to Firestore successfully!');
+                        })
+                        .catch((error) => {
+                            console.error('Error adding user to Firestore:', error);
+                        });
+                }
             })
             .catch((error) => {
-                console.error('Error adding user to Firestore:', error);
+                console.error('Error checking if user exists in Firestore:', error);
             });
     };
 

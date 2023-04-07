@@ -18,6 +18,8 @@ import AddPostScreen from './screens/AddPostScreen';
 import HighlightsScreen from './screens/HighlightsScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { Provider } from 'react-redux';
+import store from './redux/store'
 
 const firebaseConfig = {
   apiKey: "AIzaSyC0dquOYSr3_F0hhpIZMct_Vhpxq0-8Ly0",
@@ -86,7 +88,7 @@ function Home() {
         headerRight: () => {
           if (route.name === 'AddPostScreen') {
             return (
-              <TouchableOpacity onPress={()=>console.log('heyy')}>
+              <TouchableOpacity onPress={() => console.log('heyy')}>
                 <Text style={{ color: "#434343", marginRight: 10, fontFamily: 'Helvetica', fontSize: 20, fontWeight: 'bold' }}>Reset</Text>
               </TouchableOpacity>
             );
@@ -108,16 +110,18 @@ function Home() {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={defaultHeaderOptions}>
-        <Stack.Screen name="NameScreen" component={NameScreen} />
-        <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
-        <Stack.Screen name="DateScreen" component={DateScreen} />
-        <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
-        <Stack.Screen name="OtpScreen" component={OtpScreen} />
-        <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={defaultHeaderOptions}>
+          <Stack.Screen name="NameScreen" component={NameScreen} />
+          <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
+          <Stack.Screen name="DateScreen" component={DateScreen} />
+          <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
+          <Stack.Screen name="OtpScreen" component={OtpScreen} />
+          <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
 
   );
 }
