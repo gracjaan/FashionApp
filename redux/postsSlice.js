@@ -22,6 +22,24 @@ export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
   return postsData;
 });
 
+// Add like to a post in Firebase
+export const addLike = createAsyncThunk('posts/addLike', async ({ postId, uid }) => {
+  // Add like to post in Firebase
+  // You can replace this with your actual Firebase logic
+  await firebase.firestore().collection('posts').doc(postId).update({
+    likes: firebase.firestore.FieldValue.arrayUnion(uid),
+  });
+});
+
+// Remove like from a post in Firebase
+export const removeLike = createAsyncThunk('posts/removeLike', async ({ postId, uid }) => {
+  // Remove like from post in Firebase
+  // You can replace this with your actual Firebase logic
+  await firebase.firestore().collection('posts').doc(postId).update({
+    likes: firebase.firestore.FieldValue.arrayRemove(uid),
+  });
+});
+
 // Define the posts slice
 const postsSlice = createSlice({
   name: 'posts',
@@ -39,6 +57,24 @@ const postsSlice = createSlice({
       .addCase(fetchPosts.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
+      })
+      .addCase(addLike.fulfilled, (state, action) => {
+        // Update likes array in postsData with the new like
+        const { postId, uid } = action.meta.arg;
+        const postIndex = state.postsData.findIndex((post) => post.postId === postId);
+        if (postIndex !== -1) {
+          state.postsData[postIndex].likes.push(uid);
+        }
+      })
+      .addCase(removeLike.fulfilled, (state, action) => {
+        // Update likes array in postsData by removing the like
+        const { postId, uid } = action.meta.arg;
+        const postIndex = state.postsData.findIndex((post) => post.postId === postId);
+        if (postIndex !== -1) {
+          state.postsData[postIndex].likes = state.postsData[postIndex].likes.filter(
+            (like) => like !== uid
+          );
+        }
       });
   },
 });

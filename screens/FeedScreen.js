@@ -4,7 +4,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchPosts } from '../redux/postsSlice';
+import { fetchPosts, addLike, removeLike } from '../redux/postsSlice';
 import { Provider } from 'react-redux';
 
 const FeedScreen = () => {
@@ -12,12 +12,36 @@ const FeedScreen = () => {
   const postsData = useSelector(state => state.posts.postsData);
   const status = useSelector(state => state.posts.status);
   const error = useSelector(state => state.posts.error);
+  const [likedPosts, setLikedPosts] = useState([]);
+
+  const handleLikeButtonPress = async (post) => {
+    if (likedPosts.includes(post.postId)) {
+      // If post is already liked, remove the like
+      await dispatch(removeLike({ postId: post.postId, uid: firebase.auth().currentUser.uid }));
+      setLikedPosts(likedPosts.filter(postId => postId !== post.postId));
+    } else {
+      // If post is not liked, add the like
+      await dispatch(addLike({ postId: post.postId, uid: firebase.auth().currentUser.uid }));
+      setLikedPosts([...likedPosts, post.postId]);
+    }
+  };
 
 
   useEffect(() => {
     // Fetch posts data from Redux store
     dispatch(fetchPosts());
   }, []);
+
+  useEffect(() => {
+    // Update likedPosts state with postIds that the current user has liked
+    const likedPostIds = postsData.reduce((acc, post) => {
+      if (post.likes.includes(firebase.auth().currentUser.uid)) {
+        acc.push(post.postId);
+      }
+      return acc;
+    }, []);
+    setLikedPosts(likedPostIds);
+  }, [postsData]);
 
   if (status === 'loading') {
     return <Text>Loading...</Text>;
@@ -50,8 +74,12 @@ const FeedScreen = () => {
             </View>
             <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
               <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity style={{ marginRight: 15 }}>
-                  <Ionicons name={'heart'} size={30} color={'white'} />
+                <TouchableOpacity style={{ marginRight: 15 }} onPress={() => handleLikeButtonPress(item)}>
+                  <Ionicons
+                    name={'heart'}
+                    size={30}
+                    color={likedPosts.includes(item.postId) ? 'red' : 'white'}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity style={{ marginRight: 15 }}>
                   <Ionicons name={'chatbubble'} size={27} color={'white'} />

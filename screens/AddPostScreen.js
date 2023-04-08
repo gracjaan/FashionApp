@@ -39,7 +39,7 @@ const AddPostScreen = () => {
         description: description, // Replace with the description state value
         toplink: top, // Replace with the top state value
         bottomlink: bottom, // Replace with the bottom state value
-        likes: 0, // Initial likes value
+        likes: [], // Initial likes value
         comments: [], // Empty array for comments
         imageUrl: downloadUrl, // URL of the uploaded image
       });
