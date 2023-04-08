@@ -50,6 +50,8 @@ const ProfileCardScreen = () => {
     );
 
     const [profilePicture, setProfilePicture] = useState('');
+    const [username, setUsername] = useState('');
+    const [numPosts, setNumPosts] = useState('');
 
     useEffect(() => {
         // Fetch the user's profile picture from Firebase
@@ -60,7 +62,13 @@ const ProfileCardScreen = () => {
                 if (userDoc.exists) {
                     const userData = userDoc.data(); // Get the data from the user's document
                     const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
-                    setProfilePicture(profilePictureUrl); // Update the state with the retrieved URL
+                    const username = userData.username; // Get the username from the user's data
+                    setProfilePicture(profilePictureUrl); // Update the state with the retrieved profile picture URL
+                    setUsername(username); // Update the state with the retrieved username
+
+                    const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', user.uid).get();
+                    const numPosts = postsSnapshot.size; // Get the number of posts
+                    setNumPosts(numPosts);
                 }
             } catch (error) {
                 console.error('Error fetching profile picture:', error);
@@ -72,11 +80,11 @@ const ProfileCardScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.avatar}>
+            {/* <View style={styles.avatar}>
                 <Avatar
                     size='xlarge'
                     rounded
-                    source={{ uri: profilePictureç }}
+                    source={{ uri: profilePicture }}
                     title="Bj"
                     containerStyle={{ backgroundColor: 'grey' }}
                 >
@@ -90,6 +98,35 @@ const ProfileCardScreen = () => {
                 <View>
                     <Text style={styles.text}>Followed</Text>
                     <Text style={styles.text}>78</Text>
+                </View>
+            </View> */}
+            <View style={styles.personalcontainer}>
+                <View style={styles.avatarcontainer}>
+                    <Avatar
+                        size='large'
+                        rounded
+                        source={{ uri: profilePicture }}
+                        title="Bj"
+                        containerStyle={{ backgroundColor: 'grey' }}
+                    >
+                    </Avatar>
+                </View>
+                <View style={styles.textcontainer}>
+                    <Text style={styles.text}>{username}</Text>
+                </View>
+            </View>
+            <View style={styles.statscontainer}>
+                <View>
+                    <Text style={styles.text}>{numPosts}</Text>
+                    <Text style={styles.text}>Posts</Text>
+                </View>
+                <View>
+                    <Text style={styles.text}>1.5M</Text>
+                    <Text style={styles.text}>Followers</Text>
+                </View>
+                <View>
+                    <Text style={styles.text}>71</Text>
+                    <Text style={styles.text}>Following</Text>
                 </View>
             </View>
             <TabView
@@ -134,5 +171,24 @@ const styles = StyleSheet.create({
         borderColor: '#434343',
         borderWidth: 2,
         borderRadius: 10,
-    }
+    },
+    personalcontainer: {
+        flexDirection: 'row',
+        width: '90%',
+        alignSelf: 'center',
+    },
+    textcontainer: {
+        justifyContent: 'center',
+        marginLeft: 10,
+    },
+    statscontainer: {
+        margin: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        backgroundColor: '#434343',
+        borderRadius: 10,
+        width: '90%',
+        alignSelf: 'center',
+        padding: 10
+    },
 })
