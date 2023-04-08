@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchPosts, addLike, removeLike } from '../redux/postsSlice';
 import { Provider } from 'react-redux';
 
-const FeedScreen = () => {
+const FeedScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const postsData = useSelector(state => state.posts.postsData);
   const status = useSelector(state => state.posts.status);
@@ -81,7 +81,7 @@ const FeedScreen = () => {
                     color={likedPosts.includes(item.postId) ? 'red' : 'white'}
                   />
                 </TouchableOpacity>
-                <TouchableOpacity style={{ marginRight: 15 }}>
+                <TouchableOpacity style={{ marginRight: 15 }} onPress={() => navigation.navigate('CommentsScreen', { postId: item.postId })}>
                   <Ionicons name={'chatbubble'} size={27} color={'white'} />
                 </TouchableOpacity>
                 <TouchableOpacity style={{ marginRight: 15 }}>
