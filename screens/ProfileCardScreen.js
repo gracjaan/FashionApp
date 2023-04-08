@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, Image, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Header, Avatar } from 'react-native-elements';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
@@ -7,9 +7,47 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
 
-const FirstRoute = () => (
-    <View style={{ flex: 1, backgroundColor: 'black' }} />
-);
+const FirstRoute = () => {
+    const [posts, setPosts] = useState([]);
+  
+    useEffect(() => {
+      // Fetch the user's posts from Firebase
+      const fetchPosts = async () => {
+        try {
+          const user = firebase.auth().currentUser; // Get the current user
+          const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', user.uid).get(); // Fetch the user's posts from the 'posts' collection
+          const postsData = [];
+          postsSnapshot.forEach(postDoc => {
+            const postData = postDoc.data(); // Get the data from each post document
+            postsData.push(postData); // Add the post data to the postsData array
+          });
+          setPosts(postsData); // Update the state with the retrieved posts
+        } catch (error) {
+          console.error('Error fetching posts:', error);
+        }
+      };
+  
+      fetchPosts(); // Call the fetchPosts function
+    }, []);
+  
+    return (
+      <View style={{ flex: 1, backgroundColor: 'black', padding: 5 }}>
+        {/* Render the user's posts in a 3x3 grid */}
+        <FlatList
+          data={posts}
+          numColumns={3}
+          renderItem={({ item }) => (
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={{ width: '33%', height: 120, margin: 2 }}
+            />
+          )}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={{ flexGrow: 1 }}
+        />
+      </View>
+    );
+  };
 
 const SecondRoute = () => (
     <View style={{ flex: 1, backgroundColor: 'grey' }} />
