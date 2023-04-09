@@ -3,6 +3,10 @@ import { Header, Avatar } from 'react-native-elements';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useEffect, useRef } from 'react'
 import { Divider } from '@rneui/themed'
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
+import 'firebase/auth';
 
 const NewScreen = () => {
     const [fullname, setFullname] = useState('')
@@ -14,6 +18,30 @@ const NewScreen = () => {
     const [location, setLocation] = useState('')
     const locationInput = useRef(null)
     const [image, setImage] = useState('https://cdn.landesa.org/wp-content/uploads/default-user-image.png');
+
+    const [profilePicturedb, setProfilePicturedb] = useState('');
+    const [usernamedb, setUsernamedb] = useState('');
+
+    useEffect(() => {
+        // Fetch the user's profile picture from Firebase
+        const fetchProfilePicture = async () => {
+            try {
+                const user = firebase.auth().currentUser; // Get the current user
+                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get(); // Fetch the user's document from the 'users' collection
+                if (userDoc.exists) {
+                    const userData = userDoc.data(); // Get the data from the user's document
+                    const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
+                    const username = userData.username; // Get the username from the user's data
+                    setProfilePicturedb(profilePictureUrl); // Update the state with the retrieved profile picture URL
+                    setUsername(username); // Update the state with the retrieved username
+                }
+            } catch (error) {
+                console.error('Error fetching profile picture:', error);
+            }
+        };
+
+        fetchProfilePicture(); // Call the fetchProfilePicture function
+    }, []);
 
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
@@ -38,7 +66,7 @@ const NewScreen = () => {
                             <Avatar
                                 size='xlarge'
                                 rounded
-                                source={{ uri: image }}
+                                source={{ uri: profilePicturedb }}
                                 title="Bj"
                                 containerStyle={{ backgroundColor: 'grey' }}
                                 onPress={pickImage}

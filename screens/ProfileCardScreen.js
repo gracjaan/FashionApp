@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, Image, FlatList } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, Image, FlatList, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Header, Avatar } from 'react-native-elements';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
@@ -9,45 +9,45 @@ import 'firebase/auth';
 
 const FirstRoute = () => {
     const [posts, setPosts] = useState([]);
-  
+
     useEffect(() => {
-      // Fetch the user's posts from Firebase
-      const fetchPosts = async () => {
-        try {
-          const user = firebase.auth().currentUser; // Get the current user
-          const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', user.uid).get(); // Fetch the user's posts from the 'posts' collection
-          const postsData = [];
-          postsSnapshot.forEach(postDoc => {
-            const postData = postDoc.data(); // Get the data from each post document
-            postsData.push(postData); // Add the post data to the postsData array
-          });
-          setPosts(postsData); // Update the state with the retrieved posts
-        } catch (error) {
-          console.error('Error fetching posts:', error);
-        }
-      };
-  
-      fetchPosts(); // Call the fetchPosts function
+        // Fetch the user's posts from Firebase
+        const fetchPosts = async () => {
+            try {
+                const user = firebase.auth().currentUser; // Get the current user
+                const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', user.uid).get(); // Fetch the user's posts from the 'posts' collection
+                const postsData = [];
+                postsSnapshot.forEach(postDoc => {
+                    const postData = postDoc.data(); // Get the data from each post document
+                    postsData.push(postData); // Add the post data to the postsData array
+                });
+                setPosts(postsData); // Update the state with the retrieved posts
+            } catch (error) {
+                console.error('Error fetching posts:', error);
+            }
+        };
+
+        fetchPosts(); // Call the fetchPosts function
     }, []);
-  
+
     return (
-      <View style={{ flex: 1, backgroundColor: 'black', padding: 5 }}>
-        {/* Render the user's posts in a 3x3 grid */}
-        <FlatList
-          data={posts}
-          numColumns={3}
-          renderItem={({ item }) => (
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={{ width: '33%', height: 120, margin: 2 }}
+        <View style={{ flex: 1, backgroundColor: 'black', padding: 5 }}>
+            {/* Render the user's posts in a 3x3 grid */}
+            <FlatList
+                data={posts}
+                numColumns={3}
+                renderItem={({ item }) => (
+                    <Image
+                        source={{ uri: item.imageUrl }}
+                        style={{ width: '33%', height: 120, margin: 2 }}
+                    />
+                )}
+                keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{ flexGrow: 1 }}
             />
-          )}
-          keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={{ flexGrow: 1 }}
-        />
-      </View>
+        </View>
     );
-  };
+};
 
 const SecondRoute = () => (
     <View style={{ flex: 1, backgroundColor: 'grey' }} />
@@ -68,7 +68,7 @@ const renderScene = SceneMap({
     fourth: FourthRoute
 });
 
-const ProfileCardScreen = () => {
+const ProfileCardScreen = ({navigation}) => {
     const layout = useWindowDimensions();
 
     const [index, setIndex] = React.useState(0);
@@ -140,14 +140,16 @@ const ProfileCardScreen = () => {
             </View> */}
             <View style={styles.personalcontainer}>
                 <View style={styles.avatarcontainer}>
-                    <Avatar
-                        size='large'
-                        rounded
-                        source={{ uri: profilePicture }}
-                        title="Bj"
-                        containerStyle={{ backgroundColor: 'grey' }}
-                    >
-                    </Avatar>
+                    <TouchableOpacity onPress={() => navigation.navigate('EditProfileScreen')}>
+                        <Avatar
+                            size='large'
+                            rounded
+                            source={{ uri: profilePicture }}
+                            title="Bj"
+                            containerStyle={{ backgroundColor: 'grey' }}
+                        >
+                        </Avatar>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.textcontainer}>
                     <Text style={styles.text}>{username}</Text>
