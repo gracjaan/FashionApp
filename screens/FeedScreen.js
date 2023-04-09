@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchPosts, addLike, removeLike } from '../redux/postsSlice';
 import { Provider } from 'react-redux';
 
-const FeedScreen = ({navigation}) => {
+const FeedScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const postsData = useSelector(state => state.posts.postsData);
   const status = useSelector(state => state.posts.status);
@@ -60,7 +60,9 @@ const FeedScreen = ({navigation}) => {
           <View style={styles.cardView}>
             <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
+                <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
+                  <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
+                </TouchableOpacity>
                 <Text style={styles.nickname}>{item.username}</Text>
               </View>
               <View>

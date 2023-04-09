@@ -17,6 +17,7 @@ import SearchScreen from './screens/SearchScreen';
 import AddPostScreen from './screens/AddPostScreen';
 import HighlightsScreen from './screens/HighlightsScreen';
 import CommentsScreen from './screens/CommentsScreen';
+import UserScreen from './screens/UserScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { Provider } from 'react-redux';
@@ -121,6 +122,7 @@ export default function App() {
           <Stack.Screen name="OtpScreen" component={OtpScreen} />
           <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
           <Stack.Screen name="CommentsScreen" component={CommentsScreen} options={{gestureEnabled: true}}/>
+          <Stack.Screen name="UserScreen" component={UserScreen} options={{gestureEnabled: true}}/>
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

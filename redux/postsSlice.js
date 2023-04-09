@@ -42,10 +42,11 @@ export const removeLike = createAsyncThunk('posts/removeLike', async ({ postId, 
 
 export const addComment = createAsyncThunk('posts/addComment', async ({ postId, uid, comment }) => {
     // Add comment to post in Firebase
-    // You can replace this with your actual Firebase logic
-    await firebase.firestore().collection('posts').doc(postId).update({
-        comments: firebase.firestore.FieldValue.arrayUnion({ uid, comment }),
-    });
+    // Generate a unique commentId
+    const commentId = firebase.firestore().collection('posts').doc(postId).collection('comments').doc().id;
+    // Update the comment data in the sub-collection
+    await firebase.firestore().collection('posts').doc(postId).collection('comments').doc(commentId).set({ uid, comment, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    return { commentId, uid, comment };
 });
 
 // Define the posts slice
