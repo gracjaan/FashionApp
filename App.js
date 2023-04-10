@@ -124,7 +124,7 @@ export default function App() {
           <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
           <Stack.Screen name="CommentsScreen" component={CommentsScreen} options={{gestureEnabled: true}}/>
           <Stack.Screen name="UserScreen" component={UserScreen} options={{gestureEnabled: true}}/>
-          <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{gestureEnabled: true}}/>
+          <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{gestureEnabled: true}} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

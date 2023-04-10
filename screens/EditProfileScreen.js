@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Image, Keyboard, TouchableOpacity, TextInput } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Image, Keyboard, TouchableOpacity, TextInput, Button } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import firebase from 'firebase/compat/app';
@@ -7,12 +7,53 @@ import 'firebase/compat/storage';
 import 'firebase/auth';
 
 
-const EditProfileScreen = () => {
+const EditProfileScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [name, setName] = useState('');
     const [image, setImage] = useState(null);
     const [profilePicturedb, setProfilePicturedb] = useState('');
     const [usernamedb, setUsernamedb] = useState('');
+    const [namedb, setNamedb] = useState('');
+
+    const updateProfile = async () => {
+        try {
+            const user = firebase.auth().currentUser; // Get the current user
+            
+            if (image) {
+                // If image is not null, upload it to Firebase and get the download URL
+                const downloadUrl = await uploadImageToFirebase(image);
+                
+                // Update the profile picture field with the download URL
+                await firebase.firestore().collection('users').doc(user.uid).update({
+                    profilePicture: downloadUrl,
+                });
+            }
+            
+            // Update the name and username fields with the new values from state
+            await firebase.firestore().collection('users').doc(user.uid).update({
+                name: namedb,
+                username: usernamedb,
+            });
+            
+            console.log('Profile updated successfully!');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
+    };
+    
+
+
+    useEffect(() => {
+        // Use `setOptions` to update the button that we previously specified
+        // Now the button includes an `onPress` handler to update the count
+        navigation.setOptions({
+            headerRight: () => (
+                <TouchableOpacity onPress={() => { updateProfile() }}>
+                    <Text style={{ color: "#434343", marginRight: 10, fontFamily: 'Helvetica', fontSize: 20, fontWeight: 'bold' }}>Save</Text>
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation, updateProfile]);
 
     useEffect(() => {
         // Fetch the user's profile picture from Firebase
@@ -23,9 +64,11 @@ const EditProfileScreen = () => {
                 if (userDoc.exists) {
                     const userData = userDoc.data(); // Get the data from the user's document
                     const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
-                    const username = userData.username; // Get the username from the user's data
+                    const username = userData.username;
+                    const name = userData.name; // Get the username from the user's data
                     setProfilePicturedb(profilePictureUrl); // Update the state with the retrieved profile picture URL
-                    setUsernamedb(username); // Update the state with the retrieved username
+                    setUsernamedb(username);
+                    setNamedb(name);  // Update the state with the retrieved username
                 }
             } catch (error) {
                 console.error('Error fetching profile picture:', error);
@@ -49,6 +92,25 @@ const EditProfileScreen = () => {
         }
     };
 
+    const storageRef = firebase.storage().ref();
+
+    const uploadImageToFirebase = async (uri) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const filename = Date.now().toString(); // Use a unique filename
+        const imageRef = storageRef.child(`images/${filename}`);
+
+        try {
+            await imageRef.put(blob);
+            const downloadUrl = await imageRef.getDownloadURL();
+            console.log(`Image uploaded to Firebase: ${downloadUrl}`);
+            return downloadUrl;
+        } catch (error) {
+            console.error('Error uploading image to Firebase:', error);
+            return null;
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss() }}>
@@ -65,23 +127,23 @@ const EditProfileScreen = () => {
                         </TouchableOpacity>
                     </View>
                     <View style={styles.textContainer}>
-                        <Text style={styles.topText}>Username</Text>
+                        <Text style={styles.topText}>Name</Text>
                         <TextInput
-                            placeholder="Username"
+                            placeholder="Name"
                             placeholderTextColor="#434343"
-                            onChangeText={text => setUsername(text)}
-                            value={username}
+                            onChangeText={text => setNamedb(text)}
+                            value={namedb}
                             style={styles.bottomText}
                             keyboardAppearance='dark'
                         />
                     </View>
                     <View style={styles.textContainer}>
-                        <Text style={styles.topText}>Name</Text>
+                        <Text style={styles.topText}>Username</Text>
                         <TextInput
-                            placeholder="Name"
+                            placeholder="Username"
                             placeholderTextColor="#434343"
-                            onChangeText={text => setName(text)}
-                            value={name}
+                            onChangeText={text => setUsernamedb(text)}
+                            value={usernamedb}
                             style={styles.bottomText}
                             keyboardAppearance='dark'
                         />
