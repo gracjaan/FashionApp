@@ -29,7 +29,9 @@ const OtpScreen = ({ navigation, route }) => {
                         name: name,
                         username: username,
                         dateOfBirth: dateOfBirth,
-                        profilePicture: profilePicture,
+                        profilePicture: '',
+                        followers: [],
+                        following: [],
                     })
                         .then(() => {
                             console.log('User added to Firestore successfully!');
