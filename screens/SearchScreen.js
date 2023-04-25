@@ -3,14 +3,17 @@ import React, { useState } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
 
-const SearchScreen = () => {
+const SearchScreen = ({navigation}) => {
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState([]);
 
   const searchUsers = async () => {
     try {
       const snapshot = await firebase.firestore().collection('users').where('username', '>=', search).get();
-      const userData = snapshot.docs.map(doc => doc.data());
+      const userData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return { ...data, uid: doc.id }; // include the uid property in the returned object
+      });
       setUsers(userData);
     } catch (error) {
       console.log('Error searching users:', error);
@@ -44,12 +47,16 @@ const SearchScreen = () => {
             data={users}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <View style={styles.userItem}>
-                {item.profilePicture && (
-                  <Image source={{ uri: item.profilePicture }} style={styles.avatar} /> // Render avatar if available
-                )}
-                <Text style={styles.username}>{item.username}</Text>
-              </View>
+              item && item.uid ? (
+                <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
+                  <View style={styles.userItem}>
+                    {item.profilePicture && (
+                      <Image source={{ uri: item.profilePicture }} style={styles.avatar} /> // Render avatar if available
+                    )}
+                    <Text style={styles.username}>{item.username}</Text>
+                  </View>
+                </TouchableOpacity>
+              ) : null
             )}
           />
         </View>

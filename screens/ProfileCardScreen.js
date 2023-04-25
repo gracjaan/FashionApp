@@ -68,7 +68,7 @@ const renderScene = SceneMap({
     fourth: FourthRoute
 });
 
-const ProfileCardScreen = ({navigation}) => {
+const ProfileCardScreen = ({ navigation }) => {
     const layout = useWindowDimensions();
 
     const [index, setIndex] = React.useState(0);
@@ -90,6 +90,8 @@ const ProfileCardScreen = ({navigation}) => {
     const [profilePicture, setProfilePicture] = useState('');
     const [username, setUsername] = useState('');
     const [numPosts, setNumPosts] = useState('');
+    const [numFollowers, setNumFollowers] = useState(0);
+    const [numFollowing, setNumFollowing] = useState(0);
 
     useEffect(() => {
         // Fetch the user's profile picture from Firebase
@@ -103,6 +105,8 @@ const ProfileCardScreen = ({navigation}) => {
                     const username = userData.username; // Get the username from the user's data
                     setProfilePicture(profilePictureUrl); // Update the state with the retrieved profile picture URL
                     setUsername(username); // Update the state with the retrieved username
+                    setNumFollowers(userData.followers.length); // Update the state with the number of followers
+                    setNumFollowing(userData.following.length); // Update the state with the number of following
 
                     const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', user.uid).get();
                     const numPosts = postsSnapshot.size; // Get the number of posts
@@ -161,11 +165,11 @@ const ProfileCardScreen = ({navigation}) => {
                     <Text style={styles.text}>Posts</Text>
                 </View>
                 <View>
-                    <Text style={styles.text}>1.5M</Text>
+                    <Text style={styles.text}>{numFollowers}</Text>
                     <Text style={styles.text}>Followers</Text>
                 </View>
                 <View>
-                    <Text style={styles.text}>71</Text>
+                    <Text style={styles.text}>{numFollowing}</Text>
                     <Text style={styles.text}>Following</Text>
                 </View>
             </View>
