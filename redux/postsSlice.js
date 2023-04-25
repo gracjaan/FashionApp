@@ -15,8 +15,10 @@ export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
             const userSnapshot = await firebase.firestore().collection('users').doc(data.uid).get();
             const userData = userSnapshot.data();
             const username = userData ? userData.username : '';
-            const profilePicture = userData ? userData.profilePicture : ''; // Use an empty string as username if userData is not available
-            return { ...data, username, profilePicture };
+            const profilePicture = userData ? userData.profilePicture : '';
+            const followers = userData ? userData.followers : [];
+            const following = userData ? userData.following : [];  // Use an empty string as username if userData is not available
+            return { ...data, username, profilePicture, followers, following };
         })
     );
     return postsData;
@@ -37,6 +39,30 @@ export const removeLike = createAsyncThunk('posts/removeLike', async ({ postId, 
     // You can replace this with your actual Firebase logic
     await firebase.firestore().collection('posts').doc(postId).update({
         likes: firebase.firestore.FieldValue.arrayRemove(uid),
+    });
+});
+
+export const addFollow = createAsyncThunk('posts/addFollow', async ({ currentUserUid, otherUserUid }) => {
+    // If no, add the current user's uid to the other user's followers array
+    await firebase.firestore().collection('users').doc(otherUserUid).update({
+        followers: firebase.firestore.FieldValue.arrayUnion(currentUserUid)
+    });
+
+    // Add the other user's uid to the current user's following array
+    await firebase.firestore().collection('users').doc(currentUserUid).update({
+        following: firebase.firestore.FieldValue.arrayUnion(otherUserUid)
+    });
+});
+
+export const removeFollow = createAsyncThunk('posts/removeFollow', async ({ currentUserUid, otherUserUid }) => {
+    // If yes, remove the current user's uid from the other user's followers array
+    await firebase.firestore().collection('users').doc(otherUserUid).update({
+        followers: firebase.firestore.FieldValue.arrayRemove(currentUserUid)
+    });
+
+    // Remove the other user's uid from the current user's following array
+    await firebase.firestore().collection('users').doc(currentUserUid).update({
+        following: firebase.firestore.FieldValue.arrayRemove(otherUserUid)
     });
 });
 
@@ -67,14 +93,20 @@ const postsSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.error.message;
             })
+            .addCase(addFollow.fulfilled, (state, action) => {
+                console.log("addFollow.fulfilled");
+            })
+            .addCase(removeFollow.fulfilled, (state, action) => {
+                console.log("removeFollow.fulfilled");
+            })
             .addCase(addComment.fulfilled, (state, action) => {
                 // Update comments array in postsData with the new comment
                 const { postId, uid, comment } = action.meta.arg;
                 const postIndex = state.postsData.findIndex((post) => post.postId === postId);
                 if (postIndex !== -1) {
-                  state.postsData[postIndex].comments.push({ uid, comment });
+                    state.postsData[postIndex].comments.push({ uid, comment });
                 }
-              })
+            })
             .addCase(addLike.fulfilled, (state, action) => {
                 // Update likes array in postsData with the new like
                 const { postId, uid } = action.meta.arg;

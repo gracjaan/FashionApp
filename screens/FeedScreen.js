@@ -4,8 +4,11 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchPosts, addLike, removeLike } from '../redux/postsSlice';
+import { fetchPosts, addLike, removeLike, addFollow, removeFollow } from '../redux/postsSlice';
 import { Provider } from 'react-redux';
+import 'firebase/compat/firestore';
+import 'firebase/auth';
+
 
 const FeedScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -13,6 +16,22 @@ const FeedScreen = ({ navigation }) => {
   const status = useSelector(state => state.posts.status);
   const error = useSelector(state => state.posts.error);
   const [likedPosts, setLikedPosts] = useState([]);
+
+  const handleFollowButtonPress = async (user) => {
+    const currentUserUid = firebase.auth().currentUser.uid;
+    const otherUserUid = user.uid;
+
+    // Check if the current user is already following the other user
+    if (user.followers.includes(currentUserUid)) {
+      // If yes, remove the current user's uid from the other user's followers array
+      await dispatch(removeFollow({ currentUserUid, otherUserUid }));
+      
+    } else {
+      // If no, add the current user's uid to the other user's followers array
+      await dispatch(addFollow({ currentUserUid, otherUserUid }));
+    }
+  };
+
 
   const handleLikeButtonPress = async (post) => {
     if (likedPosts.includes(post.postId)) {
@@ -66,7 +85,7 @@ const FeedScreen = ({ navigation }) => {
                 <Text style={styles.nickname}>{item.username}</Text>
               </View>
               <View>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => handleFollowButtonPress(item)}>
                   <Ionicons name={'add'} size={27} color={'white'} />
                 </TouchableOpacity>
               </View>
