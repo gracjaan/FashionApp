@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, Image, FlatList } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, Image, FlatList, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Header, Avatar } from 'react-native-elements';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
@@ -68,7 +68,7 @@ const renderScene = SceneMap({
     fourth: FourthRoute
 });
 
-const UserScreen = ({route}) => {
+const UserScreen = ({route, navigation}) => {
     const layout = useWindowDimensions();
     const { uid } = route.params;
 
@@ -163,10 +163,12 @@ const UserScreen = ({route}) => {
                     <Text style={styles.text}>{numPosts}</Text>
                     <Text style={styles.text}>Posts</Text>
                 </View>
-                <View>
-                    <Text style={styles.text}>{numFollowers}</Text>
-                    <Text style={styles.text}>Followers</Text>
-                </View>
+                <TouchableOpacity onPress={() => navigation.navigate('FollowersScreen', {userId: uid})}>
+                    <View>
+                        <Text style={styles.text}>{numFollowers}</Text>
+                        <Text style={styles.text}>Followers</Text>
+                    </View>
+                </TouchableOpacity>
                 <View>
                     <Text style={styles.text}>{numFollowing}</Text>
                     <Text style={styles.text}>Following</Text>

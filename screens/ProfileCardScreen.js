@@ -164,10 +164,12 @@ const ProfileCardScreen = ({ navigation }) => {
                     <Text style={styles.text}>{numPosts}</Text>
                     <Text style={styles.text}>Posts</Text>
                 </View>
-                <View>
-                    <Text style={styles.text}>{numFollowers}</Text>
-                    <Text style={styles.text}>Followers</Text>
-                </View>
+                <TouchableOpacity onPress={() => navigation.navigate('FollowersScreen', {userId: firebase.auth().currentUser.uid})}>
+                    <View>
+                        <Text style={styles.text}>{numFollowers}</Text>
+                        <Text style={styles.text}>Followers</Text>
+                    </View>
+                </TouchableOpacity>
                 <View>
                     <Text style={styles.text}>{numFollowing}</Text>
                     <Text style={styles.text}>Following</Text>
