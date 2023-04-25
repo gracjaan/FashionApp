@@ -40,8 +40,9 @@ const AddPostScreen = () => {
         toplink: top, // Replace with the top state value
         bottomlink: bottom, // Replace with the bottom state value
         likes: [], // Initial likes value
-        comments: [], // Empty array for comments
+        //comments: [], // Empty array for comments
         imageUrl: downloadUrl, // URL of the uploaded image
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
       });
 
       return downloadUrl;
