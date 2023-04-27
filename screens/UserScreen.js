@@ -7,47 +7,47 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
 
-const FirstRoute = ({uid}) => {
+const FirstRoute = ({ uid }) => {
     const [posts, setPosts] = useState([]);
-  
+
     useEffect(() => {
-      // Fetch the user's posts from Firebase
-      const fetchPosts = async () => {
-        try {
-          const user = firebase.auth().currentUser; // Get the current user
-          const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', uid).get(); // Fetch the user's posts from the 'posts' collection
-          const postsData = [];
-          postsSnapshot.forEach(postDoc => {
-            const postData = postDoc.data(); // Get the data from each post document
-            postsData.push(postData); // Add the post data to the postsData array
-          });
-          setPosts(postsData); // Update the state with the retrieved posts
-        } catch (error) {
-          console.error('Error fetching posts:', error);
-        }
-      };
-  
-      fetchPosts(); // Call the fetchPosts function
+        // Fetch the user's posts from Firebase
+        const fetchPosts = async () => {
+            try {
+                const user = firebase.auth().currentUser; // Get the current user
+                const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', uid).get(); // Fetch the user's posts from the 'posts' collection
+                const postsData = [];
+                postsSnapshot.forEach(postDoc => {
+                    const postData = postDoc.data(); // Get the data from each post document
+                    postsData.push(postData); // Add the post data to the postsData array
+                });
+                setPosts(postsData); // Update the state with the retrieved posts
+            } catch (error) {
+                console.error('Error fetching posts:', error);
+            }
+        };
+
+        fetchPosts(); // Call the fetchPosts function
     }, []);
-  
+
     return (
-      <View style={{ flex: 1, backgroundColor: 'black', padding: 5 }}>
-        {/* Render the user's posts in a 3x3 grid */}
-        <FlatList
-          data={posts}
-          numColumns={3}
-          renderItem={({ item }) => (
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={{ width: '33%', height: 120, margin: 2 }}
+        <View style={{ flex: 1, backgroundColor: 'black', padding: 5 }}>
+            {/* Render the user's posts in a 3x3 grid */}
+            <FlatList
+                data={posts}
+                numColumns={3}
+                renderItem={({ item }) => (
+                    <Image
+                        source={{ uri: item.imageUrl }}
+                        style={{ width: '33%', height: 120, margin: 2 }}
+                    />
+                )}
+                keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{ flexGrow: 1 }}
             />
-          )}
-          keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={{ flexGrow: 1 }}
-        />
-      </View>
+        </View>
     );
-  };
+};
 
 const SecondRoute = () => (
     <View style={{ flex: 1, backgroundColor: 'grey' }} />
@@ -68,7 +68,7 @@ const renderScene = SceneMap({
     fourth: FourthRoute
 });
 
-const UserScreen = ({route, navigation}) => {
+const UserScreen = ({ route, navigation }) => {
     const layout = useWindowDimensions();
     const { uid } = route.params;
 
@@ -163,34 +163,36 @@ const UserScreen = ({route, navigation}) => {
                     <Text style={styles.text}>{numPosts}</Text>
                     <Text style={styles.text}>Posts</Text>
                 </View>
-                <TouchableOpacity onPress={() => navigation.navigate('FollowersScreen', {userId: uid})}>
+                <TouchableOpacity onPress={() => navigation.navigate('FollowersScreen', { userId: uid })}>
                     <View>
                         <Text style={styles.text}>{numFollowers}</Text>
                         <Text style={styles.text}>Followers</Text>
                     </View>
                 </TouchableOpacity>
-                <View>
-                    <Text style={styles.text}>{numFollowing}</Text>
-                    <Text style={styles.text}>Following</Text>
-                </View>
+                <TouchableOpacity onPress={() => navigation.navigate('FollowingScreen', { userId: uid })}>
+                    <View>
+                        <Text style={styles.text}>{numFollowing}</Text>
+                        <Text style={styles.text}>Following</Text>
+                    </View>
+                </TouchableOpacity>
             </View>
             <TabView
                 renderTabBar={renderTabBar}
                 navigationState={{ index, routes }}
                 renderScene={({ route }) => {
                     switch (route.key) {
-                      case 'first':
-                        return <FirstRoute uid={uid} />; // Pass uid as a prop to FirstRoute
-                      case 'second':
-                        return <SecondRoute />;
-                      case 'third':
-                        return <ThirdRoute />;
-                      case 'fourth':
-                        return <FourthRoute />;
-                      default:
-                        return null;
+                        case 'first':
+                            return <FirstRoute uid={uid} />; // Pass uid as a prop to FirstRoute
+                        case 'second':
+                            return <SecondRoute />;
+                        case 'third':
+                            return <ThirdRoute />;
+                        case 'fourth':
+                            return <FourthRoute />;
+                        default:
+                            return null;
                     }
-                  }}
+                }}
                 onIndexChange={setIndex}
                 initialLayout={{ width: layout.width }}
             />

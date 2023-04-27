@@ -20,6 +20,7 @@ import CommentsScreen from './screens/CommentsScreen';
 import UserScreen from './screens/UserScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import FollowersScreen from './screens/FollowersScreen';
+import FollowingScreen from './screens/FollowingScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { Provider } from 'react-redux';
@@ -127,6 +128,7 @@ export default function App() {
           <Stack.Screen name="UserScreen" component={UserScreen} options={{gestureEnabled: true}}/>
           <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{gestureEnabled: true}} />
           <Stack.Screen name="FollowersScreen" component={FollowersScreen} options={{gestureEnabled: true}} />
+          <Stack.Screen name="FollowingScreen" component={FollowingScreen} options={{gestureEnabled: true}} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
