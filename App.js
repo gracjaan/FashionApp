@@ -16,6 +16,7 @@ import FeedScreen from './screens/FeedScreen';
 import SearchScreen from './screens/SearchScreen';
 import AddPostScreen from './screens/AddPostScreen';
 import ArticlesScreen from './screens/ArticlesScreen';
+import ArticleScreen from './screens/ArticleScreen';
 import CommentsScreen from './screens/CommentsScreen';
 import UserScreen from './screens/UserScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
@@ -129,6 +130,7 @@ export default function App() {
           <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{gestureEnabled: true}} />
           <Stack.Screen name="FollowersScreen" component={FollowersScreen} options={{gestureEnabled: true}} />
           <Stack.Screen name="FollowingScreen" component={FollowingScreen} options={{gestureEnabled: true}} />
+          <Stack.Screen name="ArticleScreen" component={ArticleScreen} options={{gestureEnabled: true}} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

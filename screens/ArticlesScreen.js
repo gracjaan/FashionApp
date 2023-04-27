@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, SafeAreaView, TouchableOpacity } from 'react-native';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
 
-const ArticlesScreen = () => {
+const ArticlesScreen = ({ navigation }) => {
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
@@ -13,7 +13,11 @@ const ArticlesScreen = () => {
     const fetchArticles = async () => {
       try {
         const snapshot = await firebase.firestore().collection('articles').get();
-        const articlesData = snapshot.docs.map((doc) => doc.data());
+        const articlesData = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          data.id = doc.id; // Include the document ID as part of the article data
+          return data;
+        });
         setArticles(articlesData);
         console.log(articles);
       } catch (error) {
@@ -25,14 +29,16 @@ const ArticlesScreen = () => {
   }, []);
 
   const renderItem = ({ item }) => (
-    <View style={styles.articleContainer}>
-      <Image source={{ uri: item.postPicture }} style={styles.articleImage} />
-      <View style={styles.articleInfo}>
-        <Text style={styles.articleTitle}>{item.title}</Text>
-        <Text style={styles.articleAuthor}>{item.author}</Text>
-        <Text style={styles.articleDate}>12.04.2023</Text>
+    <TouchableOpacity onPress={() => navigation.navigate('ArticleScreen', { articleId: item.id })}>
+      <View style={styles.articleContainer}>
+        <Image source={{ uri: item.postPicture }} style={styles.articleImage} />
+        <View style={styles.articleInfo}>
+          <Text style={styles.articleTitle}>{item.title}</Text>
+          <Text style={styles.articleAuthor}>{item.author}</Text>
+          <Text style={styles.articleDate}>12.04.2023</Text>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
