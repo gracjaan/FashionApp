@@ -122,26 +122,6 @@ const ProfileCardScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* <View style={styles.avatar}>
-                <Avatar
-                    size='xlarge'
-                    rounded
-                    source={{ uri: profilePicture }}
-                    title="Bj"
-                    containerStyle={{ backgroundColor: 'grey' }}
-                >
-                </Avatar>
-            </View>
-            <View style={styles.ff}>
-                <View>
-                    <Text style={styles.text}>Followers</Text>
-                    <Text style={styles.text}>46</Text>
-                </View>
-                <View>
-                    <Text style={styles.text}>Followed</Text>
-                    <Text style={styles.text}>78</Text>
-                </View>
-            </View> */}
             <View style={styles.personalcontainer}>
                 <View style={styles.avatarcontainer}>
                     <TouchableOpacity onPress={() => navigation.navigate('EditProfileScreen')}>
