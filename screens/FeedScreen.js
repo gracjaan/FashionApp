@@ -25,7 +25,7 @@ const FeedScreen = ({ navigation }) => {
     if (user.followers.includes(currentUserUid)) {
       // If yes, remove the current user's uid from the other user's followers array
       await dispatch(removeFollow({ currentUserUid, otherUserUid }));
-      
+
     } else {
       // If no, add the current user's uid to the other user's followers array
       await dispatch(addFollow({ currentUserUid, otherUserUid }));
@@ -78,12 +78,12 @@ const FeedScreen = ({ navigation }) => {
         renderItem={({ item }) =>
           <View style={styles.cardView}>
             <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
+              <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
-                </TouchableOpacity>
-                <Text style={styles.nickname}>{item.username}</Text>
-              </View>
+                  <Text style={styles.nickname}>{item.username}</Text>
+                </View>
+              </TouchableOpacity>
               <View>
                 <TouchableOpacity onPress={() => handleFollowButtonPress(item)}>
                   <Ionicons name={'add'} size={27} color={'white'} />
