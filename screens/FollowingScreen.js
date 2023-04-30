@@ -12,29 +12,35 @@ const FollowingScreen = ({ route, navigation }) => {
     useEffect(() => {
         const fetchFollowing = async () => {
             try {
-              const followingRef = await firebase.firestore()
-                .collection('users')
-                .doc(userId)
-                .get();
-              const followingData = followingRef.data();
-              const followingList = followingData.following;
-              const followingDetails = [];
-          
-              for (const following of followingList) {
                 const followingRef = await firebase.firestore()
-                  .collection('users')
-                  .doc(following)
-                  .get();
-          
-                followingDetails.push(followingRef.data());
-              }
-          
-              setFollowing(followingDetails);
+                    .collection('users')
+                    .doc(userId)
+                    .get();
+                const followingData = followingRef.data();
+                const followingList = followingData.following;
+                const followingDetails = [];
+
+                for (const following of followingList) {
+                    const followingRef = await firebase.firestore()
+                        .collection('users')
+                        .doc(following)
+                        .get();
+
+                    const followingData = followingRef.data();
+                    const followingWithUid = {
+                        ...followingData,
+                        uid: following, // add the uid property to the follower object
+                    };
+                    followingDetails.push(followingWithUid);
+                }
+
+                setFollowing(followingDetails);
             } catch (error) {
-              console.error('Error fetching following:', error);
+                console.error('Error fetching following:', error);
             }
-          };
-          
+        };
+
+
 
         fetchFollowing();
     }, []);

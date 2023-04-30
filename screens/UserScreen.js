@@ -8,15 +8,25 @@ import 'firebase/compat/storage';
 import 'firebase/auth';
 
 const FirstRoute = ({ uid }) => {
+    console.log(uid)
     const [posts, setPosts] = useState([]);
+    const [uidState, setUidState] = useState(uid);
 
     useEffect(() => {
+        setUidState(uid);
+    }, [uid]);
+
+    useEffect(() => {
+        console.log("performing useeffect")
         // Fetch the user's posts from Firebase
         const fetchPosts = async () => {
             try {
                 const user = firebase.auth().currentUser; // Get the current user
-                const postsSnapshot = await firebase.firestore().collection('posts').where('uid', '==', uid).get(); // Fetch the user's posts from the 'posts' collection
-                const postsData = [];
+                const postsSnapshot = await firebase
+                    .firestore()
+                    .collection('posts')
+                    .where('uid', '==', uidState)
+                    .get(); const postsData = [];
                 postsSnapshot.forEach(postDoc => {
                     const postData = postDoc.data(); // Get the data from each post document
                     postsData.push(postData); // Add the post data to the postsData array
@@ -28,7 +38,7 @@ const FirstRoute = ({ uid }) => {
         };
 
         fetchPosts(); // Call the fetchPosts function
-    }, []);
+    }, [uidState]);
 
     return (
         <View style={{ flex: 1, backgroundColor: 'black', padding: 5 }}>
@@ -162,6 +172,7 @@ const UserScreen = ({ route, navigation }) => {
                 renderScene={({ route }) => {
                     switch (route.key) {
                         case 'first':
+                            console.log(uid);
                             return <FirstRoute uid={uid} />; // Pass uid as a prop to FirstRoute
                         case 'second':
                             return <SecondRoute />;
