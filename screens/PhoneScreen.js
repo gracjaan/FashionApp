@@ -59,6 +59,10 @@ const PhoneScreen = ({ navigation }) => {
                             withDarkTheme
                             withShadow
                             autoFocus
+                            containerStyle={{ width: 300, height: 60, alignSelf: 'center', backgroundColor: '#1F1F1F', borderRadius: 10, borderColor: '#434343', borderWidth: 2 }}
+                            textContainerStyle={{ backgroundColor: '#1F1F1F', borderRadius: 10 }}
+                            textInputStyle={{ color: 'white', fontSize: 20, fontFamily: 'Helvetica', fontWeight: 'bold', }}
+                            codeTextStyle={{ color: 'white', fontSize: 20, fontFamily: 'Helvetica', fontWeight: 'bold', }}
                         />
                     </View>
                     <View style={styles.buttonView}>
