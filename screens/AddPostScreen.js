@@ -5,6 +5,8 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import 'firebase/compat/firestore';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import * as ImageManipulator  from 'expo-image-manipulator';
+
 
 const AddPostScreen = () => {
   const [title, setTitle] = useState('')
@@ -19,7 +21,8 @@ const AddPostScreen = () => {
   const storageRef = firebase.storage().ref();
 
   const uploadImageToFirebase = async (uri) => {
-    const response = await fetch(uri);
+    const compressedUri = await compressAndResizeImage(uri);
+    const response = await fetch(compressedUri);
     const blob = await response.blob();
     const filename = Date.now().toString(); // Use a unique filename
     const imageRef = storageRef.child(`images/${filename}`);
@@ -34,7 +37,7 @@ const AddPostScreen = () => {
 
       // Add relevant data to Firestore database
       await firebase.firestore().collection('posts').doc(postId).set({
-        postId: postId, // Use the generated postId
+        //postId: postId, // Use the generated postId
         uid: firebase.auth().currentUser.uid, // Replace with the user ID
         description: description, // Replace with the description state value
         toplink: top, // Replace with the top state value
@@ -42,13 +45,28 @@ const AddPostScreen = () => {
         likes: [], // Initial likes value
         //comments: [], // Empty array for comments
         imageUrl: downloadUrl, // URL of the uploaded image
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
+        //timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
       });
 
       return downloadUrl;
     } catch (error) {
       console.error('Error uploading image to Firebase:', error);
       return null;
+    }
+  };
+
+  const compressAndResizeImage = async (uri) => {
+    try{
+    const manipResult = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 640, height: 640 } }],
+      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+    );
+
+    return manipResult.uri;
+    } catch (error) {
+      console.log('Error compressing image:', error);
+      throw error;
     }
   };
 
