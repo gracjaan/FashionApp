@@ -1,235 +1,129 @@
+import { View, Text, SafeAreaView, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchPosts, addLike, removeLike, addFollow, removeFollow } from '../redux/postsSlice';
+import { Provider } from 'react-redux';
 import 'firebase/compat/firestore';
-import 'firebase/compat/auth';
-import { FlashList } from '@shopify/flash-list';
+import 'firebase/auth';
+
 
 const FeedScreen = ({ navigation }) => {
-  const [postsData, setPostsData] = useState([]);
+  const dispatch = useDispatch();
+  const postsData = useSelector(state => state.posts.postsData);
+  const status = useSelector(state => state.posts.status);
+  const error = useSelector(state => state.posts.error);
   const [likedPosts, setLikedPosts] = useState([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
-  const [lastDocument, setLastDocument] = useState(null);
-
-  const fetchPosts = async () => {
-    try {
-      const postsRef = firebase.firestore().collection('posts');
-      let query = postsRef.orderBy('timestamp', 'desc');
-  
-      if (lastDocument) {
-        query = query.startAfter(lastDocument);
-      }
-  
-      query = query.limit(5);
-  
-      const postsSnapshot = await query.get();
-  
-      if (postsSnapshot.empty) {
-        setIsFetching(false);
-        return;
-      }
-  
-      const newPostsData = [];
-  
-      for (const doc of postsSnapshot.docs) {
-        const postData = doc.data();
-        const username = await getUsername(postData.uid);
-        const profilePicture = await getProfilePicture(postData.uid);
-  
-        newPostsData.push({ ...postData, username, profilePicture });
-      }
-  
-      setPostsData(prevPostsData => [...prevPostsData, ...newPostsData]);
-      setLastDocument(postsSnapshot.docs[postsSnapshot.docs.length - 1]);
-      setIsFetching(false);
-    } catch (error) {
-      console.log('Error fetching posts:', error);
-      setIsFetching(false);
-    }
-  };
-  
-  const getUsername = async (uid) => {
-    try {
-      const userSnapshot = await firebase.firestore().collection('users').doc(uid).get();
-      if (userSnapshot.exists) {
-        const userData = userSnapshot.data();
-        return userData.username;
-      }
-      return '';
-    } catch (error) {
-      console.log('Error fetching username:', error);
-      return '';
-    }
-  };
-  
-  const getProfilePicture = async (uid) => {
-    try {
-      const userSnapshot = await firebase.firestore().collection('users').doc(uid).get();
-      if (userSnapshot.exists) {
-        const userData = userSnapshot.data();
-        return userData.profilePicture;
-      }
-      return '';
-    } catch (error) {
-      console.log('Error fetching profile picture:', error);
-      return '';
-    }
-  };
-  
-  
-
-  const fetchLikedPosts = async () => {
-    try {
-      const currentUserUid = firebase.auth().currentUser.uid;
-      const snapshot = await firebase.firestore().collection('posts').where('likes', 'array-contains', currentUserUid).get();
-      const likedPostIds = snapshot.docs.map(doc => doc.id);
-      setLikedPosts(likedPostIds);
-    } catch (error) {
-      console.log('Error fetching liked posts:', error);
-    }
-  };
 
   const handleFollowButtonPress = async (user) => {
     const currentUserUid = firebase.auth().currentUser.uid;
     const otherUserUid = user.uid;
 
-    try {
-      const userRef = firebase.firestore().collection('users').doc(otherUserUid);
+    // Check if the current user is already following the other user
+    if (user.followers.includes(currentUserUid)) {
+      // If yes, remove the current user's uid from the other user's followers array
+      await dispatch(removeFollow({ currentUserUid, otherUserUid }));
 
-      // Check if the current user is already following the other user
-      if (user.followers.includes(currentUserUid)) {
-        // If yes, remove the current user's uid from the other user's followers array
-        await userRef.update({
-          followers: firebase.firestore.FieldValue.arrayRemove(currentUserUid)
-        });
-      } else {
-        // If no, add the current user's uid to the other user's followers array
-        await userRef.update({
-          followers: firebase.firestore.FieldValue.arrayUnion(currentUserUid)
-        });
-      }
-    } catch (error) {
-      console.log('Error updating follow status:', error);
+    } else {
+      // If no, add the current user's uid to the other user's followers array
+      await dispatch(addFollow({ currentUserUid, otherUserUid }));
     }
   };
 
 
   const handleLikeButtonPress = async (post) => {
-    try {
-      const currentUserUid = firebase.auth().currentUser.uid;
-  
-      if (likedPosts.includes(post.postId)) {
-        // If post is already liked, remove the like
-        await firebase.firestore().collection('posts').doc(post.postId).update({
-          likes: firebase.firestore.FieldValue.arrayRemove(currentUserUid)
-        });
-  
-        setLikedPosts(likedPosts.filter(postId => postId !== post.postId));
-      } else {
-        // If post is not liked, add the like
-        await firebase.firestore().collection('posts').doc(post.postId).update({
-          likes: firebase.firestore.FieldValue.arrayUnion(currentUserUid)
-        });
-  
-        setLikedPosts([...likedPosts, post.postId]);
-      }
-    } catch (error) {
-      console.log('Error updating like status:', error);
+    if (likedPosts.includes(post.postId)) {
+      // If post is already liked, remove the like
+      await dispatch(removeLike({ postId: post.postId, uid: firebase.auth().currentUser.uid }));
+      setLikedPosts(likedPosts.filter(postId => postId !== post.postId));
+    } else {
+      // If post is not liked, add the like
+      await dispatch(addLike({ postId: post.postId, uid: firebase.auth().currentUser.uid }));
+      setLikedPosts([...likedPosts, post.postId]);
     }
   };
 
 
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-  };
-
   useEffect(() => {
-    // Fetch initial posts data
-    fetchPosts();
-    fetchLikedPosts();
+    // Fetch posts data from Redux store
+    dispatch(fetchPosts());
   }, []);
 
   useEffect(() => {
-    if (isLoadingMore) {
-      fetchPosts();
-      setIsLoadingMore(false);
-    }
-  }, [isLoadingMore]);
+    // Update likedPosts state with postIds that the current user has liked
+    const likedPostIds = postsData.reduce((acc, post) => {
+      if (post.likes.includes(firebase.auth().currentUser.uid)) {
+        acc.push(post.postId);
+      }
+      return acc;
+    }, []);
+    setLikedPosts(likedPostIds);
+  }, [postsData]);
 
-  const renderPostItem = ({ item }) => {
-    return (
-      <View style={styles.cardView}>
-        <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
-          <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
-              <Text style={styles.nickname}>{item.username}</Text>
-            </View>
-          </TouchableOpacity>
-          <View>
-            <TouchableOpacity onPress={() => handleFollowButtonPress(item)}>
-              <Ionicons name={'add'} size={27} color={'white'} />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View>
-          <Image style={styles.image} source={{ uri: item.imageUrl }} />
-        </View>
-        <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={{ marginRight: 15 }} onPress={() => handleLikeButtonPress(item)}>
-              <Ionicons
-                name={'heart'}
-                size={30}
-                color={likedPosts.includes(item.postId) ? 'red' : 'white'}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ marginRight: 15 }} onPress={() => navigation.navigate('CommentsScreen', { postId: item.postId })}>
-              <Ionicons name={'chatbubble'} size={27} color={'white'} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ marginRight: 15 }}>
-              <Ionicons name={'paper-plane'} size={27} color={'white'} />
-            </TouchableOpacity>
-          </View>
-          <View>
-            <TouchableOpacity>
-              <Ionicons name={'shirt'} size={27} color={'white'} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
-  };
+  if (status === 'loading') {
+    return <Text>Loading...</Text>;
+  }
 
-  const renderFooter = () => {
-    if (!isFetching) return null;
-
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="white" />
-      </View>
-    );
-  };
+  if (status === 'failed') {
+    return <Text>Error: {error}</Text>;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlashList
+      <FlatList
         data={postsData}
         keyExtractor={item => item.postId}
-        renderItem={renderPostItem}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        estimatedItemSize={500}
+        renderItem={({ item }) =>
+          <View style={styles.cardView}>
+            <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
+              <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
+                  <Text style={styles.nickname}>{item.username}</Text>
+                </View>
+              </TouchableOpacity>
+              <View>
+                <TouchableOpacity onPress={() => handleFollowButtonPress(item)}>
+                  <Ionicons name={'add'} size={27} color={'white'} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View>
+              <Image style={styles.image} source={{ uri: item.imageUrl }} />
+            </View>
+            <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
+              <View style={{ flexDirection: 'row' }}>
+                <TouchableOpacity style={{ marginRight: 15 }} onPress={() => handleLikeButtonPress(item)}>
+                  <Ionicons
+                    name={'heart'}
+                    size={30}
+                    color={likedPosts.includes(item.postId) ? 'red' : 'white'}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity style={{ marginRight: 15 }} onPress={() => navigation.navigate('CommentsScreen', { postId: item.postId })}>
+                  <Ionicons name={'chatbubble'} size={27} color={'white'} />
+                </TouchableOpacity>
+                <TouchableOpacity style={{ marginRight: 15 }}>
+                  <Ionicons name={'paper-plane'} size={27} color={'white'} />
+                </TouchableOpacity>
+              </View>
+              <View>
+                <TouchableOpacity>
+                  <Ionicons name={'shirt'} size={27} color={'white'} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        }
       />
-    </SafeAreaView>
-  );
-};
+    </SafeAreaView >
+  )
+}
 
-export default FeedScreen;
+
+export default FeedScreen
 
 const styles = StyleSheet.create({
   container: {
@@ -253,7 +147,14 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     width: '100%',
     height: 530,
+    //borderRadius: 20,
+    //borderWidth: 2,
+    //borderColor: '#434343',
+    //backgroundColor: '#1F1F1F',
+    //justifyContent: 'center',
     alignSelf: 'center',
+    //alignItems: 'center',
+    //padding: 10
   },
   topCard: {
     flexDirection: 'row',
@@ -276,4 +177,4 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 10,
   },
-});
+})
