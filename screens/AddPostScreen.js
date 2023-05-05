@@ -37,7 +37,7 @@ const AddPostScreen = () => {
 
       // Add relevant data to Firestore database
       await firebase.firestore().collection('posts').doc(postId).set({
-        //postId: postId, // Use the generated postId
+        postId: postId, // Use the generated postId
         uid: firebase.auth().currentUser.uid, // Replace with the user ID
         description: description, // Replace with the description state value
         toplink: top, // Replace with the top state value
@@ -45,7 +45,7 @@ const AddPostScreen = () => {
         likes: [], // Initial likes value
         //comments: [], // Empty array for comments
         imageUrl: downloadUrl, // URL of the uploaded image
-        //timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
       });
 
       return downloadUrl;
