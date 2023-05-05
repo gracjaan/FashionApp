@@ -5,6 +5,8 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 
 const EditProfileScreen = ({ navigation }) => {
@@ -18,29 +20,44 @@ const EditProfileScreen = ({ navigation }) => {
     const updateProfile = async () => {
         try {
             const user = firebase.auth().currentUser; // Get the current user
-            
+
             if (image) {
                 // If image is not null, upload it to Firebase and get the download URL
                 const downloadUrl = await uploadImageToFirebase(image);
-                
+
                 // Update the profile picture field with the download URL
                 await firebase.firestore().collection('users').doc(user.uid).update({
                     profilePicture: downloadUrl,
                 });
             }
-            
+
             // Update the name and username fields with the new values from state
             await firebase.firestore().collection('users').doc(user.uid).update({
                 name: namedb,
                 username: usernamedb,
             });
-            
+
             console.log('Profile updated successfully!');
         } catch (error) {
             console.error('Error updating profile:', error);
         }
     };
-    
+
+    const compressAndResizeImage = async (uri) => {
+        try {
+            const manipResult = await ImageManipulator.manipulateAsync(
+                uri,
+                [{ resize: { width: 150, height: 150 } }],
+                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+            );
+
+            return manipResult.uri;
+        } catch (error) {
+            console.log('Error compressing image:', error);
+            throw error;
+        }
+    };
+
 
 
     useEffect(() => {
@@ -95,7 +112,8 @@ const EditProfileScreen = ({ navigation }) => {
     const storageRef = firebase.storage().ref();
 
     const uploadImageToFirebase = async (uri) => {
-        const response = await fetch(uri);
+        const compressedUri = await compressAndResizeImage(uri);
+        const response = await fetch(compressedUri);
         const blob = await response.blob();
         const filename = Date.now().toString(); // Use a unique filename
         const imageRef = storageRef.child(`images/${filename}`);
