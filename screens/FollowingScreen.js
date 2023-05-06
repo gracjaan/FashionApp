@@ -49,11 +49,13 @@ const FollowingScreen = ({ route, navigation }) => {
         // Render your following item here
         return (
             <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
-                <View style={styles.userItem}>
+                <View style={styles.userContainer}>
                     {item.profilePicture && (
                         <Image source={{ uri: item.profilePicture }} style={styles.avatar} /> // Render avatar if available
                     )}
-                    <Text style={styles.username}>{item.username}</Text>
+                    <View style={styles.userInfo}>
+                        <Text style={styles.username}>{item.username}</Text>
+                    </View>
                 </View>
             </TouchableOpacity>
         );
@@ -61,11 +63,13 @@ const FollowingScreen = ({ route, navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <FlatList
-                data={following}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={renderItem}
-            />
+            <View style={{ marginTop: 20 }}>
+                <FlatList
+                    data={following}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={renderItem}
+                />
+            </View>
         </SafeAreaView>
     );
 };
@@ -95,6 +99,19 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#434343',
         marginTop: 10,
+    },
+    userContainer: {
+        flexDirection: 'row',
+        marginBottom: 16,
+        backgroundColor: '#1F1F1F',
+        borderRadius: 10,
+        padding: 10,
+        width: '90%',
+        alignSelf: 'center',
+    },
+    userInfo: {
+        flex: 1,
+        justifyContent: 'center',
     },
 });
 
