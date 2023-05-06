@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
 
-const SearchScreen = ({navigation}) => {
+const SearchScreen = ({ navigation }) => {
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState([]);
 
@@ -20,49 +20,51 @@ const SearchScreen = ({navigation}) => {
     }
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss() }}>
-        <View style={{ flex: 1 }}>
-          <View style={styles.searchView}>
-            <View style={styles.inputView}>
-              <TextInput
-                maxLength={24}
-                placeholder="Search"
-                placeholderTextColor="#434343"
-                onChangeText={text => setSearch(text)}
-                value={search}
-                style={styles.inputText}
-                keyboardAppearance='dark'
-              />
-            </View>
-            <TouchableOpacity
-              style={styles.continue}
-              onPress={searchUsers} // Call searchUsers function on button press
-            >
-              <Ionicons name={'arrow-forward'} size={30} />
-            </TouchableOpacity>
+  const renderItem = ({ item }) => (
+    item && item.uid ? (
+      <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
+        <View style={styles.userContainer}>
+          <Image source={{ uri: item.profilePicture }} style={styles.avatar} />
+          <View style={styles.userInfo}>
+            <Text style={styles.username}>{item.username}</Text>
           </View>
-          <FlatList
-            data={users}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              item && item.uid ? (
-                <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
-                  <View style={styles.userItem}>
-                    {item.profilePicture && (
-                      <Image source={{ uri: item.profilePicture }} style={styles.avatar} /> // Render avatar if available
-                    )}
-                    <Text style={styles.username}>{item.username}</Text>
-                  </View>
-                </TouchableOpacity>
-              ) : null
-            )}
-          />
         </View>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
-  )
+      </TouchableOpacity>
+    ) : null
+  );
+
+return (
+  <SafeAreaView style={styles.container}>
+    <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss() }}>
+      <View style={{ flex: 1 }}>
+        <View style={styles.searchView}>
+          <View style={styles.inputView}>
+            <TextInput
+              maxLength={24}
+              placeholder="Search"
+              placeholderTextColor="#434343"
+              onChangeText={text => setSearch(text)}
+              value={search}
+              style={styles.inputText}
+              keyboardAppearance='dark'
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.continue}
+            onPress={searchUsers} // Call searchUsers function on button press
+          >
+            <Ionicons name={'arrow-forward'} size={30} />
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={users}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={renderItem}
+        />
+      </View>
+    </TouchableWithoutFeedback>
+  </SafeAreaView>
+)
 }
 
 export default SearchScreen
@@ -88,6 +90,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
   },
   continue: {
     backgroundColor: 'white',
@@ -126,5 +129,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#434343',
     marginTop: 10,
+  },
+  userContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    backgroundColor: '#1F1F1F',
+    borderRadius: 10,
+    padding: 10,
+    width: '90%',
+    alignSelf: 'center',
+  },
+  userInfo: {
+    flex: 1,
+    justifyContent: 'center',
   },
 })
