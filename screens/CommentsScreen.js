@@ -1,47 +1,39 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, TextInput, Keyboard, TouchableOpacity, FlatList, Image } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { addComment } from '../redux/postsSlice';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
-import { useSelector, useDispatch } from 'react-redux';
 
 const CommentsScreen = ({ route }) => {
     const [comment, setComment] = useState('')
     const [comments, setComments] = useState([]);
     const { postId } = route.params
-    const dispatch = useDispatch();
+    const [commentToDelete, setCommentToDelete] = useState(null);
 
-    const handleCommentSubmit = () => {
-        // Dispatch addComment async thunk with the postId, uid (from Redux or wherever you get it), and the comment
-        dispatch(
-            addComment({ postId, uid: firebase.auth().currentUser.uid, comment }) // Replace 'yourUid' with the actual uid of the user
-        );
-        setComment('');
+    // Fetch comments data from Firestore
+    const fetchComments = async () => {
+        try {
+            const commentsSnapshot = await firebase.firestore().collection('posts').doc(postId).collection('comments').get();
+            const commentsData = commentsSnapshot.docs.map(async doc => {
+                const commentData = doc.data();
+                const userData = await firebase.firestore().collection('users').doc(commentData.uid).get();
+                const userDataValue = userData.data();
+                return {
+                    ...commentData,
+                    username: userDataValue.username, // Replace 'username' with the actual field name in the users collection for username
+                    userProfilePicture: userDataValue.profilePicture, // Replace 'profilePicture' with the actual field name in the users collection for profile picture
+                    commentId: doc.id,
+                };
+            });
+            Promise.all(commentsData).then(result => {
+                setComments(result);
+            });
+        } catch (error) {
+            console.error('Error fetching comments from Firebase:', error);
+        }
     };
 
     useEffect(() => {
-        // Fetch comments data from Firestore
-        const fetchComments = async () => {
-            try {
-                const commentsSnapshot = await firebase.firestore().collection('posts').doc(postId).collection('comments').get();
-                const commentsData = commentsSnapshot.docs.map(async doc => {
-                    const commentData = doc.data();
-                    const userData = await firebase.firestore().collection('users').doc(commentData.uid).get();
-                    const userDataValue = userData.data();
-                    return {
-                        ...commentData,
-                        username: userDataValue.username, // Replace 'username' with the actual field name in the users collection for username
-                        userProfilePicture: userDataValue.profilePicture // Replace 'profilePicture' with the actual field name in the users collection for profile picture
-                    };
-                });
-                Promise.all(commentsData).then(result => {
-                    setComments(result);
-                });
-            } catch (error) {
-                console.error('Error fetching comments from Firebase:', error);
-            }
-        };
         fetchComments();
     }, [postId]);
 
@@ -59,6 +51,7 @@ const CommentsScreen = ({ route }) => {
                 timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
             });
             setComment('');
+            await fetchComments();
             return commentId;
         } catch (error) {
             console.error('Error uploading comment to Firebase:', error);
@@ -66,15 +59,69 @@ const CommentsScreen = ({ route }) => {
         }
     };
 
+    const deleteComment = async (commentId) => {
+        try {
+            // Delete the comment from Firestore
+            await firebase
+                .firestore()
+                .collection('posts')
+                .doc(postId)
+                .collection('comments')
+                .doc(commentId)
+                .delete();
+
+            // Refetch the comments from Firestore
+            await fetchComments();
+        } catch (error) {
+            console.error('Error deleting comment from Firebase:', error);
+        }
+    };
+
+    const handleCommentLongPress = (commentId) => {
+        console.log('Long pressed comment with ID:', commentId);
+        setCommentToDelete(commentId);
+    };
+
+    const handleDeletePress = async () => {
+        if (commentToDelete) {
+            const commentDoc = await firebase
+                .firestore()
+                .collection('posts')
+                .doc(postId)
+                .collection('comments')
+                .doc(commentToDelete)
+                .get();
+
+            if (commentDoc.exists) {
+                const commentData = commentDoc.data();
+                const currentUserUid = firebase.auth().currentUser.uid;
+
+                if (commentData.uid === currentUserUid) {
+                    console.log('Deleting comment with ID:', commentToDelete);
+                    deleteComment(commentToDelete);
+                } else {
+                    console.log("You are not the author of this comment.");
+                }
+            } else {
+                console.log("Comment does not exist.");
+            }
+
+            setCommentToDelete(null);
+        }
+    };
+
+
     const renderCommentItem = ({ item }) => {
         return (
-            <View style={styles.commentContainer}>
-                <Image source={{ uri: item.userProfilePicture }} style={styles.avatar} />
-                <View style={styles.commentContentContainer}>
-                    <Text style={styles.username}>{item.username}</Text>
-                    <Text style={styles.comment}>{item.comment}</Text>
+            <TouchableOpacity onLongPress={() => handleCommentLongPress(item.commentId)}>
+                <View style={styles.commentContainer}>
+                    <Image source={{ uri: item.userProfilePicture }} style={styles.avatar} />
+                    <View style={styles.commentContentContainer}>
+                        <Text style={styles.username}>{item.username}</Text>
+                        <Text style={styles.comment}>{item.comment}</Text>
+                    </View>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
@@ -110,6 +157,13 @@ const CommentsScreen = ({ route }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
+                <Modal visible={commentToDelete !== null} animationType="slide" transparent={true}>
+                    <View style={styles.deleteConfirmationContainer}>
+                        <Text style={{ fontFamily: 'Helvetica', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 20 }}>Are you sure you want to delete this comment?</Text>
+                        <Button title="Delete" onPress={handleDeletePress} />
+                        <Button title="Cancel" onPress={() => setCommentToDelete(null)} />
+                    </View>
+                </Modal>
             </KeyboardAvoidingView>
         </SafeAreaView>
     )
@@ -224,5 +278,21 @@ const styles = StyleSheet.create({
     commentsListContainer: {
         paddingVertical: 10,
         paddingHorizontal: 16,
+    },
+    deleteConfirmationContainer: {
+        //flex: 1,
+        alignSelf: 'center',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        marginTop: 200,
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        elevation: 5,
+        //marginVertical: 300,
+
     },
 })
