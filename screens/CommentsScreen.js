@@ -140,7 +140,6 @@ const CommentsScreen = ({ route }) => {
                     <View style={styles.searchView}>
                         <View style={styles.inputView}>
                             <TextInput
-                                maxLength={24}
                                 placeholder="Comment"
                                 placeholderTextColor="#434343"
                                 onChangeText={text => setComment(text)}
@@ -202,7 +201,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: 'Helvetica',
         fontWeight: 'bold',
-        textAlign: 'center',
+        //textAlign: 'center',
     },
     buttonView: {
         flex: 1,
