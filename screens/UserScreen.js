@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, Image, FlatList, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, FlatList, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Header, Avatar } from 'react-native-elements';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
@@ -6,9 +6,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
+import { Image } from 'expo-image';
 
 const FirstRoute = ({ uid }) => {
-    console.log(uid)
     const [posts, setPosts] = useState([]);
     const [uidState, setUidState] = useState(uid);
 
@@ -172,7 +172,6 @@ const UserScreen = ({ route, navigation }) => {
                 renderScene={({ route }) => {
                     switch (route.key) {
                         case 'first':
-                            console.log(uid);
                             return <FirstRoute uid={uid} />; // Pass uid as a prop to FirstRoute
                         case 'second':
                             return <SecondRoute />;
