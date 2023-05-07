@@ -29,7 +29,7 @@ const OtpScreen = ({ navigation, route }) => {
                         name: name,
                         username: username,
                         dateOfBirth: dateOfBirth,
-                        profilePicture: '',
+                        profilePicture: 'https://firebasestorage.googleapis.com/v0/b/fir-auth-13f1b.appspot.com/o/images%2F1683401784814?alt=media&token=4cd4781d-685b-4554-a037-78d22e1f0cc0',
                         followers: [],
                         following: [],
                     })
