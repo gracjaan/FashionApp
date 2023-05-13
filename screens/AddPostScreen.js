@@ -17,6 +17,7 @@ const AddPostScreen = () => {
   const [des, setDes] = useState('')
   const [top, setTop] = useState('')
   const [bottom, setBottom] = useState('')
+  const [accessory, setAccessory] = useState('')
 
   const storageRef = firebase.storage().ref();
 
@@ -42,6 +43,7 @@ const AddPostScreen = () => {
         description: description, // Replace with the description state value
         toplink: top, // Replace with the top state value
         bottomlink: bottom, // Replace with the bottom state value
+        accessorylink: accessory, // Replace with the accessory state value
         likes: [], // Initial likes value
         //comments: [], // Empty array for comments
         imageUrl: downloadUrl, // URL of the uploaded image
@@ -138,6 +140,21 @@ const AddPostScreen = () => {
                 style={styles.secondColumn}
                 onChangeText={text => setBottom(text)}
                 value={bottom}
+                placeholder="www.example.com"
+                placeholderTextColor={'grey'}
+                keyboardAppearance='dark'
+              />
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
+            <View style={{ flexBasis: 150 }}>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Accessory</Text>
+            </View>
+            <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
+              <TextInput
+                style={styles.secondColumn}
+                onChangeText={text => setAccessory(text)}
+                value={accessory}
                 placeholder="www.example.com"
                 placeholderTextColor={'grey'}
                 keyboardAppearance='dark'
