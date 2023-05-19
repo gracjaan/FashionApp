@@ -1,9 +1,10 @@
-import { View, Text, SafeAreaView, Image, StyleSheet, ActivityIndicator, ScrollView } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, ActivityIndicator, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
+import { Image } from 'expo-image';
 
 const ArticleScreen = ({ route }) => {
     const { articleId } = route.params;
@@ -30,32 +31,51 @@ const ArticleScreen = ({ route }) => {
     }, [articleId]);
 
     if (!article) {
-        return <ActivityIndicator />;
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#aaa" />
+            </View>
+        );
     }
+
+    const timestamp = article.timestamp.toDate();
+
+    const formattedDate = timestamp.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+
+    const formattedTime = timestamp.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric'
+    });
 
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView>
-                <Image source={{ uri: article.postPicture }} style={styles.articleImage} />
-                <View style={styles.articleContainer}>
-                    <Image source={{ uri: article.authorPicture }} style={styles.authorPicture} />
-                    <View style={styles.articleInfo}>
-                        <Text style={styles.articleTitle}>{article.title}</Text>
-                        <Text style={styles.articleAuthor}>{article.author}</Text>
-                        <Text style={styles.articleDate}>12.04.2023</Text>
+            {article && (
+                <ScrollView>
+                    <Image source={{ uri: article.postPicture }} style={styles.articleImage} />
+                    <View style={styles.articleContainer}>
+                        <Image source={{ uri: article.authorPicture }} style={styles.authorPicture} />
+                        <View style={styles.articleInfo}>
+                            <Text style={styles.articleTitle}>{article.title}</Text>
+                            <Text style={styles.articleAuthor}>{article.author}</Text>
+                            <Text style={styles.articleDate}>{formattedDate} · {formattedTime}</Text>
+                        </View>
                     </View>
-                </View>
-                <View style={styles.article}>
-                    {article.paragraphs && article.paragraphs.length > 0 ? (
-                        article.paragraphs.map((paragraph, index) => (
-                            <Text key={index} style={styles.articleContent}>{paragraph}</Text>
-                        ))
-                    ) : (
-                        <Text style={styles.noContentText}>No content available for this article.</Text>
-                    )}
-                </View>
-            </ScrollView>
+                    <View style={styles.article}>
+                        {article.paragraphs && article.paragraphs.length > 0 ? (
+                            article.paragraphs.map((paragraph, index) => (
+                                <Text key={index} style={styles.articleContent}>{paragraph}</Text>
+                            ))
+                        ) : (
+                            <Text style={styles.noContentText}>No content available for this article.</Text>
+                        )}
+                    </View>
+                </ScrollView>
+            )}
         </SafeAreaView>
     )
 }
@@ -100,7 +120,7 @@ const styles = StyleSheet.create({
     },
     articleDate: {
         fontSize: 14,
-        color: '#FFFFFF',
+        color: 'grey',
         fontFamily: 'Helvetica',
     },
     authorPicture: {
@@ -126,6 +146,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Helvetica',
         marginTop: 8,
         fontStyle: 'italic',
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        marginBottom: 10,
+        backgroundColor: 'black',
+        flex: 1,
     },
 
 })
