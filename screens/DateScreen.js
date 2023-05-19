@@ -1,8 +1,9 @@
-import { View, Text, SafeAreaView, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, TextInput, Alert } from 'react-native'
 import React, { useState, useRef } from 'react'
 import store from '../redux/store'
+import ContinueButton from '../comp/ContinueButton'
 
-const DateScreen = ({navigation}) => {
+const DateScreen = ({ navigation }) => {
     const [day, setDay] = useState('')
     const [month, setMonth] = useState('')
     const [year, setYear] = useState('')
@@ -21,6 +22,40 @@ const DateScreen = ({navigation}) => {
         setMonth(text)
         if (text.length === 2) {
             yearInput.current.focus()
+        }
+    };
+
+    const isValidDate = (day, month, year) => {
+        const parsedDay = parseInt(day, 10);
+        const parsedMonth = parseInt(month, 10);
+        const parsedYear = parseInt(year, 10);
+
+        if (
+            isNaN(parsedDay) ||
+            isNaN(parsedMonth) ||
+            isNaN(parsedYear) ||
+            parsedDay < 1 ||
+            parsedDay > 31 ||
+            parsedMonth < 1 ||
+            parsedMonth > 12 ||
+            parsedYear < 1900 || // Change this to the appropriate minimum year
+            parsedYear > new Date().getFullYear()
+        ) {
+            return false;
+        }
+
+        // Additional validation rules can be added if needed
+
+        return true;
+    };
+
+    const handleContinue = () => {
+        if (isValidDate(day, month, year)) {
+            store.dispatch({ type: 'UPDATE_DATE_OF_BIRTH', payload: { day, month, year } });
+            console.log(store.getState());
+            navigation.navigate('PhoneScreen');
+        } else {
+            Alert.alert('Invalid Date', 'Please enter a valid date.');
         }
     };
 
@@ -96,19 +131,7 @@ const DateScreen = ({navigation}) => {
                         </View>
                     </View>
                     <View style={styles.buttonView}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                if (!isDisabled) {
-                                    store.dispatch({ type: 'UPDATE_DATE_OF_BIRTH', payload: { day, month, year } })
-                                    console.log(store.getState())
-                                    navigation.navigate('PhoneScreen');
-                                }
-                            }}
-                            style={[styles.continue, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}
-                            disabled={isDisabled}
-                        >
-                            <Text style={[styles.description, { margin: 15, color: isDisabled ? '#F5F5F5' : 'black' }]}>Continue</Text>
-                        </TouchableOpacity>
+                        <ContinueButton onPress={handleContinue} isDisabled={isDisabled} />
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
@@ -154,14 +177,5 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-end',
         margin: 10,
-    },
-    continue: {
-        height: 60,
-        width: '100%',
-        justifyContent: 'center',
-        alignSelf: 'center',
-        borderRadius: 10,
-        backgroundColor: 'white',
-
     },
 })
