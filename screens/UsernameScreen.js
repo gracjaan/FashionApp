@@ -1,10 +1,18 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, TextInput, Keyboard, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, TextInput, Keyboard } from 'react-native'
 import React, { useState } from 'react'
 import store from '../redux/store'
+import ContinueButton from '../comp/ContinueButton'
 
-const UsernameScreen = ({navigation}) => {
+const UsernameScreen = ({ navigation }) => {
     const [username, setUsername] = useState('')
     const isDisabled = username.length < 4;
+
+    const handleContinue = () => {
+        if (!isDisabled) {
+            store.dispatch({ type: 'UPDATE_USERNAME', payload: username });
+            navigation.navigate('DateScreen');
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -22,22 +30,14 @@ const UsernameScreen = ({navigation}) => {
                             style={styles.inputText}
                             autoFocus={true}
                             keyboardAppearance='dark'
+                            autoCapitalize='words'
+                            autoCorrect={false}
+                            maxLength={30}
+                            autoComplete='username'
                         />
                     </View>
                     <View style={styles.buttonView}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                if (!isDisabled) {
-                                    store.dispatch({ type: 'UPDATE_USERNAME', payload: username })
-                                    console.log(store.getState())
-                                    navigation.navigate('DateScreen');
-                                }
-                            }}
-                            style={[styles.continue, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}
-                            disabled={isDisabled}
-                        >
-                            <Text style={[styles.description, { margin: 15, color: isDisabled ? '#F5F5F5' : 'black' }]}>Continue</Text>
-                        </TouchableOpacity>
+                        <ContinueButton onPress={handleContinue} isDisabled={isDisabled} />
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
@@ -84,14 +84,5 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-end',
         margin: 10,
-    },
-    continue: {
-        height: 60,
-        width: '100%',
-        justifyContent: 'center',
-        alignSelf: 'center',
-        borderRadius: 10,
-        backgroundColor: 'white',
-
     },
 })
