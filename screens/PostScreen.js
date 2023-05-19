@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react'
 import { Image } from 'expo-image'
@@ -18,37 +18,37 @@ const PostScreen = ({ route, navigation }) => {
 
     const fetchPosts = async () => {
         try {
-          const postRef = firebase.firestore().collection('posts').doc(postId);
-          const postDoc = await postRef.get();
-      
-          if (postDoc.exists) {
-            const postData = postDoc.data();
-      
-            const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
-            const userDoc = await userRef.get();
-      
-            if (userDoc.exists) {
-              const userData = userDoc.data();
-              setInspo(userData.inspo.includes(postId));
+            const postRef = firebase.firestore().collection('posts').doc(postId);
+            const postDoc = await postRef.get();
+
+            if (postDoc.exists) {
+                const postData = postDoc.data();
+
+                const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+                const userDoc = await userRef.get();
+
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    setInspo(userData.inspo.includes(postId));
+                }
+
+                const username = await getUsername(postData.uid);
+                const profilePicture = await getProfilePicture(postData.uid);
+                const postDataWithUser = { ...postData, username, profilePicture };
+
+                setPost(postDataWithUser);
+
+                if (postData.likes.includes(firebase.auth().currentUser.uid)) {
+                    setLiked(true);
+                }
+            } else {
+                console.log('No such document!');
             }
-      
-            const username = await getUsername(postData.uid);
-            const profilePicture = await getProfilePicture(postData.uid);
-            const postDataWithUser = { ...postData, username, profilePicture };
-      
-            setPost(postDataWithUser);
-      
-            if (postData.likes.includes(firebase.auth().currentUser.uid)) {
-              setLiked(true);
-            }
-          } else {
-            console.log('No such document!');
-          }
         } catch (error) {
-          console.log('Error fetching posts:', error);
+            console.log('Error fetching posts:', error);
         }
-      };
-      
+    };
+
 
     const toggleLike = async () => {
         console.log('Toggling like!');
@@ -123,6 +123,28 @@ const PostScreen = ({ route, navigation }) => {
         }
     };
 
+    if (!post) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#aaa" />
+            </View>
+        );
+    }
+
+    const timestamp = post.timestamp.toDate();
+
+    // Format the date as "DD.MM.YYYY"
+    const formattedDate = timestamp.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+
+    const formattedTime = timestamp.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric'
+    });
+
     return (
         <SafeAreaView style={styles.container}>
             {post ? (
@@ -131,34 +153,50 @@ const PostScreen = ({ route, navigation }) => {
                         <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: post.uid })}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <Image style={styles.avatar} source={{ uri: post.profilePicture }} />
-                                <Text style={styles.nickname}>{post.username}</Text>
+                                <View style={{ marginLeft: 10 }}>
+                                    <Text style={styles.nickname}>{post.username}</Text>
+                                    <Text style={styles.date}>{formattedDate} · {formattedTime}</Text>
+                                </View>
                             </View>
                         </TouchableOpacity>
                     </View>
                     <View>
                         <Image style={styles.image} source={{ uri: post.imageUrl }} />
                     </View>
-                    <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
+                    <View style={[styles.topCard, { justifyContent: 'space-between', marginBottom: 5 }]}>
                         <View style={{ flexDirection: 'row' }}>
-                            <TouchableOpacity style={{ marginRight: 15 }} onPress={() => toggleLike()} >
+                            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => toggleLike()}>
                                 <Ionicons
-                                    name={'heart'}
-                                    size={30}
-                                    color={liked ? 'red' : 'white'}
+                                    name={liked ? 'heart' : 'heart-outline'}
+                                    size={28}
+                                    color={liked ? '#fb3959' : 'white'}
                                 />
                             </TouchableOpacity>
-                            <TouchableOpacity style={{ marginRight: 15 }} onPress={() => navigation.navigate('CommentsScreen', { postId: post.postId })}>
-                                <Ionicons name={'chatbubble'} size={27} color={'white'} />
+                            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => navigation.navigate('CommentsScreen', { postId: post.postId })}>
+                                <Ionicons name={'chatbubble-outline'} size={25} color={'white'} />
                             </TouchableOpacity>
-                            <TouchableOpacity style={{ marginRight: 15 }} onPress={() => toggleInspo()}>
-                                <Ionicons name={'paper-plane'} size={27} color={inspo ? 'blue' : 'white'} />
+                            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => toggleInspo()}>
+                                <Ionicons
+                                    name={inspo ? 'bookmark' : 'bookmark-outline'}
+                                    size={25}
+                                    color={'white'}
+                                />
                             </TouchableOpacity>
                         </View>
                         <View>
-                            <TouchableOpacity>
-                                <Ionicons name={'shirt'} size={27} color={'white'} />
+                            <TouchableOpacity onPress={() => navigation.navigate('GarmentsScreen', { postId: post.postId })}>
+                                <Ionicons name={'shirt-outline'} size={25} color={'white'} />
                             </TouchableOpacity>
                         </View>
+                    </View>
+                    <View style={{ marginHorizontal: 10 }}>
+                        {post.description && (
+                            <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+                                <Text style={styles.nickname}>{post.username}: </Text>
+                                <Text style={styles.description}>{post.description}</Text>
+                            </View>
+                        )}
+                        <Text style={styles.description}>liked by {post.likes.length} fashion icons.</Text>
                     </View>
                 </View>
             ) : (
@@ -206,7 +244,33 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontFamily: 'Helvetica',
         fontWeight: 'bold',
-        textAlign: 'center',
-        marginLeft: 10,
+        //textAlign: 'center',
+        //marginLeft: 10,
+    },
+    loaderStyle: {
+        marginVertical: 16,
+        alignItems: "center",
+    },
+    date: {
+        color: 'grey',
+        fontSize: 12,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        //textAlign: 'center',
+    },
+    description: {
+        color: 'white',
+        fontSize: 15,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        //textAlign: 'center',
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        marginBottom: 10,
+        backgroundColor: 'black',
+        flex: 1,
     },
 })
