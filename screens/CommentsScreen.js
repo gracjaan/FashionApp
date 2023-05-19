@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
@@ -9,6 +9,7 @@ const CommentsScreen = ({ route }) => {
     const [comments, setComments] = useState([]);
     const { postId } = route.params
     const [commentToDelete, setCommentToDelete] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Fetch comments data from Firestore
     const fetchComments = async () => {
@@ -27,6 +28,7 @@ const CommentsScreen = ({ route }) => {
             });
             Promise.all(commentsData).then(result => {
                 setComments(result);
+                setIsLoading(false);
             });
         } catch (error) {
             console.error('Error fetching comments from Firebase:', error);
@@ -125,22 +127,41 @@ const CommentsScreen = ({ route }) => {
         );
     };
 
+    const renderComments = () => {
+        if (isLoading) {
+            return (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#aaa" />
+                </View>
+            );
+        } else if (comments.length === 0) {
+            return (
+                <View style={styles.noCommentsContainer}>
+                    <Ionicons name="chatbubble-ellipses-outline" size={100} color="#aaa" style={{ marginBottom: 10 }} />
+                    <Text style={styles.noCommentsText}>no comments yet. {"\n"} be the first one.</Text>
+                </View>
+            );
+        } else {
+            return (
+                <FlatList
+                    data={comments}
+                    renderItem={renderCommentItem}
+                    keyExtractor={item => item.commentId}
+                    contentContainerStyle={styles.commentsListContainer}
+                />
+            );
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={10}>
-                <View>
-                    <FlatList
-                        data={comments}
-                        renderItem={renderCommentItem}
-                        keyExtractor={item => item.commentId}
-                        contentContainerStyle={styles.commentsListContainer}
-                    />
-                </View>
+                {renderComments()}
                 <View style={styles.buttonView}>
                     <View style={styles.searchView}>
                         <View style={styles.inputView}>
                             <TextInput
-                                placeholder="Comment"
+                                placeholder="comment."
                                 placeholderTextColor="#434343"
                                 onChangeText={text => setComment(text)}
                                 value={comment}
@@ -293,5 +314,23 @@ const styles = StyleSheet.create({
         elevation: 5,
         //marginVertical: 300,
 
+    },
+    noCommentsContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noCommentsText: {
+        color: 'grey',
+        fontSize: 16,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        textAlign: 'center',
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        marginBottom: 10,
     },
 })
