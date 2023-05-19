@@ -4,6 +4,7 @@ import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import PhoneInput from "react-native-phone-number-input";
 import { firebaseConfig } from '../config';
 import firebase from 'firebase/compat/app';
+import ContinueButton from '../comp/ContinueButton';
 
 const PhoneScreen = ({ navigation }) => {
     const [value, setValue] = useState("");
@@ -50,29 +51,19 @@ const PhoneScreen = ({ navigation }) => {
                             defaultValue={value}
                             defaultCode="PL"
                             layout="first"
-                            onChangeText={(text) => {
-                                setValue(text);
-                            }}
-                            onChangeFormattedText={(text) => {
-                                setFormattedValue(text);
-                            }}
+                            onChangeText={(text) => { setValue(text) }}
+                            onChangeFormattedText={(text) => { setFormattedValue(text) }}
                             withDarkTheme
                             withShadow
                             autoFocus
-                            containerStyle={{ width: 300, height: 60, alignSelf: 'center', backgroundColor: '#1F1F1F', borderRadius: 10, borderColor: '#434343', borderWidth: 2 }}
+                            containerStyle={styles.phoneInput}
                             textContainerStyle={{ backgroundColor: '#1F1F1F', borderRadius: 10 }}
-                            textInputStyle={{ color: 'white', fontSize: 20, fontFamily: 'Helvetica', fontWeight: 'bold', }}
-                            codeTextStyle={{ color: 'white', fontSize: 20, fontFamily: 'Helvetica', fontWeight: 'bold', }}
+                            textInputStyle={styles.phoneInputText}
+                            codeTextStyle={styles.phoneInputText}
                         />
                     </View>
                     <View style={styles.buttonView}>
-                        <TouchableOpacity
-                            onPress={sendVerification}
-                            style={[styles.continue, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}
-                            disabled={isDisabled}
-                        >
-                            <Text style={[styles.description, { margin: 15, color: isDisabled ? '#F5F5F5' : 'black' }]}>Continue</Text>
-                        </TouchableOpacity>
+                        <ContinueButton onPress={sendVerification} isDisabled={isDisabled} />
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
@@ -134,5 +125,20 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
         margin: 10,
+    },
+    phoneInput: {
+        width: 300,
+        height: 60,
+        alignSelf: 'center',
+        backgroundColor: '#1F1F1F',
+        borderRadius: 10,
+        borderColor: '#434343',
+        borderWidth: 2,
+    },
+    phoneInputText: {
+        color: 'white',
+        fontSize: 20,
+        fontFamily: 'Helvetica',
+        fontWeight: 'bold',
     },
 })
