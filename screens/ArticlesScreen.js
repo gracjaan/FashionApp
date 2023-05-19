@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity } from 'react-native';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
+import { Image } from 'expo-image';
 
 const ArticlesScreen = ({ navigation }) => {
   const [articles, setArticles] = useState([]);
@@ -28,18 +29,34 @@ const ArticlesScreen = ({ navigation }) => {
     fetchArticles();
   }, []);
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => navigation.navigate('ArticleScreen', { articleId: item.id })}>
-      <View style={styles.articleContainer}>
-        <Image source={{ uri: item.postPicture }} style={styles.articleImage} />
-        <View style={styles.articleInfo}>
-          <Text style={styles.articleTitle}>{item.title}</Text>
-          <Text style={styles.articleAuthor}>{item.author}</Text>
-          <Text style={styles.articleDate}>12.04.2023</Text>
+  const renderItem = ({ item }) => {
+
+    const timestamp = item.timestamp.toDate();
+
+    const formattedDate = timestamp.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
+    const formattedTime = timestamp.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric'
+    });
+
+    return (
+      <TouchableOpacity onPress={() => navigation.navigate('ArticleScreen', { articleId: item.id })}>
+        <View style={styles.articleContainer}>
+          <Image source={{ uri: item.postPicture }} style={styles.articleImage} />
+          <View style={styles.articleInfo}>
+            <Text style={styles.articleTitle}>{item.title}</Text>
+            <Text style={styles.articleAuthor}>{item.author}</Text>
+            <Text style={styles.articleDate}>{formattedDate} · {formattedTime}</Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -92,7 +109,7 @@ const styles = StyleSheet.create({
   },
   articleDate: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: 'grey',
     fontFamily: 'Helvetica',
   },
 });
