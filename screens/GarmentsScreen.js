@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, ScrollView } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
@@ -10,6 +10,7 @@ const GarmentsScreen = ({ route }) => {
     const [alternative, setAlternative] = useState('')
     const [alternatives, setAlternatives] = useState([]);
     const [alternativeToDelete, setAlternativeToDelete] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         firebase.firestore().collection('posts').doc(postId).get()
@@ -39,6 +40,7 @@ const GarmentsScreen = ({ route }) => {
             });
             Promise.all(alternativesData).then(result => {
                 setAlternatives(result);
+                setIsLoading(false);
             });
         } catch (error) {
             console.error('Error fetching alternatives from Firebase:', error);
@@ -79,7 +81,7 @@ const GarmentsScreen = ({ route }) => {
                 .firestore()
                 .collection('posts')
                 .doc(postId)
-                .collection('alternative')
+                .collection('alternatives')
                 .doc(alternativeId)
                 .delete();
             await fetchAlternatives();
@@ -135,6 +137,33 @@ const GarmentsScreen = ({ route }) => {
         );
     };
 
+    const renderAlternatives = () => {
+        console.log(alternatives.length);
+        if (isLoading) {
+            return (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#aaa" />
+                </View>
+            );
+        } else if (alternatives.length === 0) {
+            return (
+                <View style={styles.noAlternativesContainer}>
+                    <Ionicons name="chatbubble-ellipses-outline" size={100} color="#aaa" style={{ marginBottom: 10 }} />
+                    <Text style={styles.noAlternativesText}>no alternatives yet. {"\n"} be the first one.</Text>
+                </View>
+            );
+        } else {
+            return (
+                <FlatList
+                    data={alternatives}
+                    renderItem={renderAlternativeItem}
+                    keyExtractor={item => item.alternativeId}
+                    contentContainerStyle={styles.alternativesListContainer}
+                />
+            );
+        }
+    };
+
 
 
     return (
@@ -147,7 +176,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'arrow-up'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.toplink ? post.toplink : "Not provided"}</Text>
+                                <Text style={styles.text}>{post.toplink ? post.toplink : "not provided."}</Text>
                             </View>
                         </View>
                         <View style={styles.rowContainer}>
@@ -155,7 +184,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'arrow-down'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.bottomlink ? post.bottomlink : "Not provided"}</Text>
+                                <Text style={styles.text}>{post.bottomlink ? post.bottomlink : "not provided."}</Text>
                             </View>
                         </View>
                         <View style={styles.rowContainer}>
@@ -163,22 +192,15 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'add'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.accessorylink ? post.accessorylink : "Not provided"}</Text>
+                                <Text style={styles.text}>{post.accessorylink ? post.accessorylink : "not provided."}</Text>
                             </View>
                         </View>
-                        <View>
-                            <FlatList
-                                data={alternatives}
-                                renderItem={renderAlternativeItem}
-                                keyExtractor={item => item.alternativeId}
-                                contentContainerStyle={styles.alternativesListContainer}
-                            />
-                        </View>
+                        {renderAlternatives()}
                         <View style={styles.buttonView}>
                             <View style={styles.searchView}>
                                 <View style={styles.inputView}>
                                     <TextInput
-                                        placeholder="Alternative"
+                                        placeholder="alternative."
                                         placeholderTextColor="#434343"
                                         onChangeText={text => setAlternative(text)}
                                         value={alternative}
@@ -221,7 +243,7 @@ const styles = StyleSheet.create({
     rowContainer: {
         flexDirection: 'row',
         marginHorizontal: 20,
-        marginVertical: 10,
+        marginVertical: 5,
     },
     square: {
         width: 50,
@@ -331,6 +353,23 @@ const styles = StyleSheet.create({
         //marginVertical: 300,
 
     },
-
+    noAlternativesContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noAlternativesText: {
+        color: 'grey',
+        fontSize: 16,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        textAlign: 'center',
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        marginBottom: 10,
+    },
 
 })
