@@ -41,7 +41,7 @@ return (
           <View style={styles.inputView}>
             <TextInput
               maxLength={24}
-              placeholder="Search"
+              placeholder="search."
               placeholderTextColor="#434343"
               onChangeText={text => setSearch(text)}
               value={search}
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   userContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 8,
     backgroundColor: '#1F1F1F',
     borderRadius: 10,
     padding: 10,
