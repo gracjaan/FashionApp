@@ -6,7 +6,7 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
 import store from '../redux/store';
-import { useSelector } from 'react-redux';
+import ContinueButton from '../comp/ContinueButton';
 
 const OtpScreen = ({ navigation, route }) => {
     const verificationId = route.params.vid;
@@ -16,14 +16,11 @@ const OtpScreen = ({ navigation, route }) => {
     const addUserToFirestore = (uid) => {
         const state = store.getState(); // Access the current state of the Redux store
         const { name, username, dateOfBirth, profilePicture } = state.user; // Destructure the values from the user reducer
-    
+
         // Check if user already exists in Firestore
         firebase.firestore().collection('users').doc(uid).get()
             .then((docSnapshot) => {
-                if (docSnapshot.exists) {
-                    console.log('User already exists in Firestore:', docSnapshot.data());
-                    // User already exists, do not add again
-                } else {
+                if (!docSnapshot.exists)  {
                     // User does not exist, add to Firestore
                     firebase.firestore().collection('users').doc(uid).set({
                         name: name,
@@ -33,16 +30,10 @@ const OtpScreen = ({ navigation, route }) => {
                         followers: [],
                         following: [],
                     })
-                        .then(() => {
-                            console.log('User added to Firestore successfully!');
-                        })
-                        .catch((error) => {
-                            console.error('Error adding user to Firestore:', error);
-                        });
                 }
             })
             .catch((error) => {
-                console.error('Error checking if user exists in Firestore:', error);
+                Alert.alert('Something went wrong!', 'Please try again.');
             });
     };
 
@@ -56,7 +47,6 @@ const OtpScreen = ({ navigation, route }) => {
                 //add user to firestore
                 store.dispatch({ type: 'UPDATE_UID', payload: firebase.auth().currentUser.uid })
                 const state = store.getState();
-                console.log(store.getState());
                 addUserToFirestore(firebase.auth().currentUser.uid);
                 navigation.navigate('Home')
             })
@@ -91,13 +81,7 @@ const OtpScreen = ({ navigation, route }) => {
                         >
                             <Text style={styles.smallText}>Change phone number</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={confirmCode}
-                            style={[styles.continue, { backgroundColor: isDisabled ? '#9B9B9B' : 'white' }]}
-                            disabled={isDisabled}
-                        >
-                            <Text style={[styles.description, { margin: 15, color: isDisabled ? '#F5F5F5' : 'black' }]}>Continue</Text>
-                        </TouchableOpacity>
+                        <ContinueButton onPress={confirmCode} isDisabled={isDisabled} />
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
