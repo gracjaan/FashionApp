@@ -25,12 +25,10 @@ const PhoneScreen = ({ navigation }) => {
 
 
     const sendVerification = () => {
-        console.log(formattedValue);
         const phoneProvider = new firebase.auth.PhoneAuthProvider();
         phoneProvider
             .verifyPhoneNumber(formattedValue, recaptchaVerifier.current)
             .then(setVerificationId);
-        console.log(verificationId);
     };
 
     return (
