@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     },
     userContainer: {
         flexDirection: 'row',
-        marginBottom: 16,
+        marginBottom: 8,
         backgroundColor: '#1F1F1F',
         borderRadius: 10,
         padding: 10,
