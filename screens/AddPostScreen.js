@@ -1,17 +1,14 @@
 import { View, Text, SafeAreaView, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import 'firebase/compat/firestore';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import * as ImageManipulator  from 'expo-image-manipulator';
 
 
 const AddPostScreen = () => {
-  const [title, setTitle] = useState('')
-  const [tags, setTags] = useState('')
-  const [description, setDescription] = useState('')
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [image, setImage] = useState('https://www.shutterstock.com/image-vector/upload-icon-vector-illustration-on-260nw-1909181089.jpg')
   const [des, setDes] = useState('')
@@ -40,7 +37,7 @@ const AddPostScreen = () => {
       await firebase.firestore().collection('posts').doc(postId).set({
         postId: postId, // Use the generated postId
         uid: firebase.auth().currentUser.uid, // Replace with the user ID
-        description: description, // Replace with the description state value
+        description: des, // Replace with the description state value
         toplink: top, // Replace with the top state value
         bottomlink: bottom, // Replace with the bottom state value
         accessorylink: accessory, // Replace with the accessory state value
@@ -109,7 +106,7 @@ const AddPostScreen = () => {
               <>
                 <View style={{ alignItems: 'center' }}>
                   <Ionicons name="camera-outline" size={100} color="white" />
-                  <Text style={styles.uploadText}>Upload Photo</Text>
+                  <Text style={styles.uploadText}>upload photo.</Text>
                 </View>
               </>
             )}
@@ -118,7 +115,7 @@ const AddPostScreen = () => {
         <View style={{ height: 100, marginTop: 50 }}>
           <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
             <View style={{ flexBasis: 150 }}>
-              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Top</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>top.</Text>
             </View>
             <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
               <TextInput
@@ -133,7 +130,7 @@ const AddPostScreen = () => {
           </View>
           <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
             <View style={{ flexBasis: 150 }}>
-              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Bottom</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>bottom.</Text>
             </View>
             <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
               <TextInput
@@ -148,7 +145,7 @@ const AddPostScreen = () => {
           </View>
           <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
             <View style={{ flexBasis: 150 }}>
-              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Accessory</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>accessory.</Text>
             </View>
             <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
               <TextInput
@@ -163,14 +160,14 @@ const AddPostScreen = () => {
           </View>
           <View style={{ flexDirection: 'row', flex: 1, marginLeft: 15, alignItems: 'center', alignContent: 'center', }}>
             <View style={{ flexBasis: 150 }}>
-              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>Description</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontFamily: 'Helvetica', fontWeight: 'bold', textAlign: 'left', }}>description.</Text>
             </View>
             <View styel={{ alignSelf: 'center', justifyContent: 'center', alignContent: 'center', alignItems: 'center' }}>
               <TextInput
                 style={styles.secondColumn}
                 onChangeText={text => setDes(text)}
                 value={des}
-                placeholder="Description"
+                placeholder="description"
                 placeholderTextColor={'grey'}
                 keyboardAppearance='dark'
               />
