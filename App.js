@@ -50,7 +50,7 @@ const Tab = createBottomTabNavigator();
 const defaultHeaderOptions = {
   headerTitle: () => (
     <Image
-      source={require('/Users/gracjanchmielnicki/newApp/assets/end-logo.png')}
+      source={require('./assets/styll.png')}
       style={{ width: 80, height: 30, resizeMode: 'contain' }}
     />
   ),
@@ -127,14 +127,14 @@ export default function App() {
           <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
           <Stack.Screen name="OtpScreen" component={OtpScreen} />
           <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
-          <Stack.Screen name="CommentsScreen" component={CommentsScreen} options={{gestureEnabled: true}}/>
-          <Stack.Screen name="GarmentsScreen" component={GarmentsScreen} options={{gestureEnabled: true}}/>
-          <Stack.Screen name="UserScreen" component={UserScreen} options={{gestureEnabled: true}}/>
-          <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{gestureEnabled: true}} />
-          <Stack.Screen name="FollowersScreen" component={FollowersScreen} options={{gestureEnabled: true}} />
-          <Stack.Screen name="FollowingScreen" component={FollowingScreen} options={{gestureEnabled: true}} />
-          <Stack.Screen name="ArticleScreen" component={ArticleScreen} options={{gestureEnabled: true}} />
-          <Stack.Screen name="PostScreen" component={PostScreen} options={{gestureEnabled: true}} />
+          <Stack.Screen name="CommentsScreen" component={CommentsScreen} options={{ gestureEnabled: true }} />
+          <Stack.Screen name="GarmentsScreen" component={GarmentsScreen} options={{ gestureEnabled: true }} />
+          <Stack.Screen name="UserScreen" component={UserScreen} options={{ gestureEnabled: true }} />
+          <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{ gestureEnabled: true }} />
+          <Stack.Screen name="FollowersScreen" component={FollowersScreen} options={{ gestureEnabled: true }} />
+          <Stack.Screen name="FollowingScreen" component={FollowingScreen} options={{ gestureEnabled: true }} />
+          <Stack.Screen name="ArticleScreen" component={ArticleScreen} options={{ gestureEnabled: true }} />
+          <Stack.Screen name="PostScreen" component={PostScreen} options={{ gestureEnabled: true }} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
