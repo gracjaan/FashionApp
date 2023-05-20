@@ -28,6 +28,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { Provider } from 'react-redux';
 import store from './redux/store'
+import UserContext from './context/UserContext';
+import { useEffect, useState } from 'react';
+import firebase from 'firebase/compat/app';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC0dquOYSr3_F0hhpIZMct_Vhpxq0-8Ly0",
@@ -117,26 +120,46 @@ function Home() {
 
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        const userSnapshot = await firebase.firestore().collection('users').doc(user.uid).get();
+        const userData = userSnapshot.data();
+        setCurrentUser({ uid: user.uid, ...userData });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   return (
     <Provider store={store}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={defaultHeaderOptions}>
-          <Stack.Screen name="NameScreen" component={NameScreen} />
-          <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
-          <Stack.Screen name="DateScreen" component={DateScreen} />
-          <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
-          <Stack.Screen name="OtpScreen" component={OtpScreen} />
-          <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
-          <Stack.Screen name="CommentsScreen" component={CommentsScreen} options={{ gestureEnabled: true }} />
-          <Stack.Screen name="GarmentsScreen" component={GarmentsScreen} options={{ gestureEnabled: true }} />
-          <Stack.Screen name="UserScreen" component={UserScreen} options={{ gestureEnabled: true }} />
-          <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{ gestureEnabled: true }} />
-          <Stack.Screen name="FollowersScreen" component={FollowersScreen} options={{ gestureEnabled: true }} />
-          <Stack.Screen name="FollowingScreen" component={FollowingScreen} options={{ gestureEnabled: true }} />
-          <Stack.Screen name="ArticleScreen" component={ArticleScreen} options={{ gestureEnabled: true }} />
-          <Stack.Screen name="PostScreen" component={PostScreen} options={{ gestureEnabled: true }} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <UserContext.Provider value={{ currentUser }}>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={defaultHeaderOptions}>
+            <Stack.Screen name="NameScreen" component={NameScreen} />
+            <Stack.Screen name="UsernameScreen" component={UsernameScreen} />
+            <Stack.Screen name="DateScreen" component={DateScreen} />
+            <Stack.Screen name="PhoneScreen" component={PhoneScreen} />
+            <Stack.Screen name="OtpScreen" component={OtpScreen} />
+            <Stack.Screen options={{ headerShown: false }} name="Home" component={Home} />
+            <Stack.Screen name="CommentsScreen" component={CommentsScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="GarmentsScreen" component={GarmentsScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="UserScreen" component={UserScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="FollowersScreen" component={FollowersScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="FollowingScreen" component={FollowingScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="ArticleScreen" component={ArticleScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="PostScreen" component={PostScreen} options={{ gestureEnabled: true }} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </UserContext.Provider>
     </Provider>
 
   );
