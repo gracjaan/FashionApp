@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, ScrollView, TextInput, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react'
 import firebase from 'firebase/compat/app';
@@ -10,7 +10,7 @@ import * as ImageManipulator  from 'expo-image-manipulator';
 
 const AddPostScreen = () => {
   const [isImageSelected, setIsImageSelected] = useState(false);
-  const [image, setImage] = useState('https://www.shutterstock.com/image-vector/upload-icon-vector-illustration-on-260nw-1909181089.jpg')
+  const [image, setImage] = useState('')
   const [des, setDes] = useState('')
   const [top, setTop] = useState('')
   const [bottom, setBottom] = useState('')
@@ -85,10 +85,10 @@ const AddPostScreen = () => {
   };
 
   const onPostButtonPress = async () => {
-    if (image) {
+    if (isImageSelected && top && bottom) {
       await uploadImageToFirebase(image);
     } else {
-      console.log('No image selected');
+      Alert.alert('Please select required fields.', 'You must select an image and provide links for top and bottom.' )
     }
   };
 
