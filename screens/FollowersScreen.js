@@ -6,42 +6,35 @@ import 'firebase/compat/storage';
 import 'firebase/auth';
 
 const FollowersScreen = ({ route, navigation }) => {
-    const { userId } = route.params;
-    const [followers, setFollowers] = useState([]);
+    const { followers } = route.params;
+    const [follow, setFollow] = useState([]);
+
+    const fetchFollowers = async () => {
+        try {
+            const followerDetails = [];
+
+            for (const follower of followers) {
+                const followerRef = await firebase.firestore()
+                    .collection('users')
+                    .doc(follower)
+                    .get();
+
+                const followerData = followerRef.data();
+                const followerWithUid = {
+                    ...followerData,
+                    uid: follower, // add the uid property to the follower object
+                };
+                followerDetails.push(followerWithUid);
+            }
+
+            setFollow(followerDetails);
+            console.log(followerDetails);
+        } catch (error) {
+            console.error('Error fetching followers:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchFollowers = async () => {
-            try {
-                const followersRef = await firebase.firestore()
-                    .collection('users')
-                    .doc(userId)
-                    .get();
-                const followersData = followersRef.data();
-                const followersList = followersData.followers;
-                const followerDetails = [];
-
-                for (const follower of followersList) {
-                    const followerRef = await firebase.firestore()
-                        .collection('users')
-                        .doc(follower)
-                        .get();
-
-                    const followerData = followerRef.data();
-                    const followerWithUid = {
-                        ...followerData,
-                        uid: follower, // add the uid property to the follower object
-                    };
-                    followerDetails.push(followerWithUid);
-                }
-
-                setFollowers(followerDetails);
-            } catch (error) {
-                console.error('Error fetching followers:', error);
-            }
-        };
-
-
-
         fetchFollowers();
     }, []);
 
@@ -65,7 +58,7 @@ const FollowersScreen = ({ route, navigation }) => {
         <SafeAreaView style={styles.container}>
             <View style={{ marginTop: 20 }}>
                 <FlatList
-                    data={followers}
+                    data={follow}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={renderItem}
                 />

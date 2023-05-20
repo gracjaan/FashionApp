@@ -6,42 +6,35 @@ import 'firebase/compat/storage';
 import 'firebase/auth';
 
 const FollowingScreen = ({ route, navigation }) => {
-    const { userId } = route.params;
-    const [following, setFollowing] = useState([]);
+    const { followings } = route.params;
+    const [follow, setFollow] = useState([]);
 
-    useEffect(() => {
-        const fetchFollowing = async () => {
-            try {
+    const fetchFollowing = async () => {
+        try {
+            const followingDetails = [];
+
+            for (const following of followings) {
                 const followingRef = await firebase.firestore()
                     .collection('users')
-                    .doc(userId)
+                    .doc(following)
                     .get();
+
                 const followingData = followingRef.data();
-                const followingList = followingData.following;
-                const followingDetails = [];
-
-                for (const following of followingList) {
-                    const followingRef = await firebase.firestore()
-                        .collection('users')
-                        .doc(following)
-                        .get();
-
-                    const followingData = followingRef.data();
-                    const followingWithUid = {
-                        ...followingData,
-                        uid: following, // add the uid property to the follower object
-                    };
-                    followingDetails.push(followingWithUid);
-                }
-
-                setFollowing(followingDetails);
-            } catch (error) {
-                console.error('Error fetching following:', error);
+                const followingWithUid = {
+                    ...followingData,
+                    uid: following, // add the uid property to the follower object
+                };
+                followingDetails.push(followingWithUid);
             }
-        };
 
+            setFollow(followingDetails);
+            console.log(followingDetails);
+        } catch (error) {
+            console.error('Error fetching following:', error);
+        }
+    };
 
-
+    useEffect(() => {
         fetchFollowing();
     }, []);
 
@@ -65,7 +58,7 @@ const FollowingScreen = ({ route, navigation }) => {
         <SafeAreaView style={styles.container}>
             <View style={{ marginTop: 20 }}>
                 <FlatList
-                    data={following}
+                    data={follow}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={renderItem}
                 />
