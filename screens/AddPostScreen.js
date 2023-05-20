@@ -1,11 +1,12 @@
 import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import 'firebase/compat/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImageManipulator  from 'expo-image-manipulator';
+import UserContext from '../context/UserContext';
 
 
 const AddPostScreen = () => {
@@ -15,6 +16,7 @@ const AddPostScreen = () => {
   const [top, setTop] = useState('')
   const [bottom, setBottom] = useState('')
   const [accessory, setAccessory] = useState('')
+  const { currentUser } = useContext(UserContext);
 
   const storageRef = firebase.storage().ref();
 
@@ -35,16 +37,25 @@ const AddPostScreen = () => {
 
       // Add relevant data to Firestore database
       await firebase.firestore().collection('posts').doc(postId).set({
-        postId: postId, // Use the generated postId
-        uid: firebase.auth().currentUser.uid, // Replace with the user ID
+        //postId: postId, // Use the generated postId
+
+        uid: currentUser.uid, // Replace with the user ID
+        profilePicture: currentUser.profilePicture, // Replace with the user's profile picture URL
+        username: currentUser.username, // Replace with the user's username
+
         description: des, // Replace with the description state value
         toplink: top, // Replace with the top state value
         bottomlink: bottom, // Replace with the bottom state value
         accessorylink: accessory, // Replace with the accessory state value
+
         likes: [], // Initial likes value
-        //comments: [], // Empty array for comments
+        
         imageUrl: downloadUrl, // URL of the uploaded image
         timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
+      });
+
+      await firebase.firestore().collection('users').doc(currentUser.uid).update({
+        posts: firebase.firestore.FieldValue.arrayUnion(postId)
       });
 
       return downloadUrl;
