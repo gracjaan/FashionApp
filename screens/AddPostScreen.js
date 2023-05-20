@@ -273,6 +273,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontFamily: 'Helvetica',
-    fontWeight: 'bold',
+    fontWeight: 'regular',
   }
 })
