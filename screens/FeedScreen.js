@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
@@ -8,115 +8,276 @@ import { fetchPosts, addLike, removeLike, addFollow, removeFollow } from '../red
 import { Provider } from 'react-redux';
 import 'firebase/compat/firestore';
 import 'firebase/auth';
+import { FlashList } from '@shopify/flash-list';
+import { Image } from 'expo-image';
 
 
 const FeedScreen = ({ navigation }) => {
-  const dispatch = useDispatch();
-  const postsData = useSelector(state => state.posts.postsData);
-  const status = useSelector(state => state.posts.status);
-  const error = useSelector(state => state.posts.error);
+  const [postsData, setPostsData] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
-
-  const handleFollowButtonPress = async (user) => {
-    const currentUserUid = firebase.auth().currentUser.uid;
-    const otherUserUid = user.uid;
-
-    // Check if the current user is already following the other user
-    if (user.followers.includes(currentUserUid)) {
-      // If yes, remove the current user's uid from the other user's followers array
-      await dispatch(removeFollow({ currentUserUid, otherUserUid }));
-
-    } else {
-      // If no, add the current user's uid to the other user's followers array
-      await dispatch(addFollow({ currentUserUid, otherUserUid }));
-    }
-  };
-
+  const [inspoPosts, setInspoPosts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastDocument, setLastDocument] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLikeButtonPress = async (post) => {
-    if (likedPosts.includes(post.postId)) {
-      // If post is already liked, remove the like
-      await dispatch(removeLike({ postId: post.postId, uid: firebase.auth().currentUser.uid }));
-      setLikedPosts(likedPosts.filter(postId => postId !== post.postId));
-    } else {
-      // If post is not liked, add the like
-      await dispatch(addLike({ postId: post.postId, uid: firebase.auth().currentUser.uid }));
-      setLikedPosts([...likedPosts, post.postId]);
+    try {
+      const currentUserUid = firebase.auth().currentUser.uid;
+
+      if (likedPosts.includes(post.postId)) {
+        // If post is already liked, remove the like
+        await firebase.firestore().collection('posts').doc(post.postId).update({
+          likes: firebase.firestore.FieldValue.arrayRemove(currentUserUid)
+        });
+
+        setLikedPosts(likedPosts.filter(postId => postId !== post.postId));
+      } else {
+        // If post is not liked, add the like
+        await firebase.firestore().collection('posts').doc(post.postId).update({
+          likes: firebase.firestore.FieldValue.arrayUnion(currentUserUid)
+        });
+
+        setLikedPosts([...likedPosts, post.postId]);
+      }
+    } catch (error) {
+      console.log('Error updating like status:', error);
+    }
+  };
+
+  const handleInspoButtonPress = async (post) => {
+    try {
+      const currentUserUid = firebase.auth().currentUser.uid;
+      const userRef = firebase.firestore().collection('users').doc(currentUserUid);
+      const userSnapshot = await userRef.get();
+      const inspoArray = userSnapshot.data().inspo;
+
+      if (inspoArray.includes(post.postId)) {
+        // If post is already liked, remove the like
+        await userRef.update({
+          inspo: firebase.firestore.FieldValue.arrayRemove(post.postId)
+        });
+
+        setInspoPosts(inspoPosts.filter(postId => postId !== post.postId));
+      } else {
+        // If post is not liked, add the like
+        await userRef.update({
+          inspo: firebase.firestore.FieldValue.arrayUnion(post.postId)
+        });
+        setInspoPosts([...inspoPosts, post.postId]);
+      }
+    } catch (error) {
+      console.log('Error updating inspo status:', error);
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
+      const postsRef = firebase.firestore().collection('posts');
+      let query = postsRef.orderBy('timestamp', 'desc');
+
+      if (lastDocument) {
+        console.log('lastDocument exists');
+        query = query.startAfter(lastDocument);
+      }
+
+      query = query.limit(5);
+
+      const postsSnapshot = await query.get();
+
+      if (postsSnapshot.empty) {
+        setIsLoading(false);
+        return;
+      }
+
+      const newPostsData = [];
+
+      for (const doc of postsSnapshot.docs) {
+        const postData = doc.data();
+        const username = await getUsername(postData.uid);
+        const profilePicture = await getProfilePicture(postData.uid);
+
+        newPostsData.push({ ...postData, username, profilePicture, key: doc.id });
+      }
+
+      let first = 0;
+      let second = 0;
+
+      setPostsData(prevPostsData => {
+        const uniquePosts = [...prevPostsData];
+        newPostsData.forEach(newPost => {
+          first += 1;
+          if (!uniquePosts.some(post => post.key === newPost.key)) {
+            uniquePosts.push(newPost);
+            second += 1;
+          }
+        });
+        return uniquePosts;
+      });
+      console.log('first:', first);
+      console.log('second:', second);
+
+      setLastDocument(postsSnapshot.docs[postsSnapshot.docs.length - 1]);
+      fetchLikedPosts();
+      fetchInspo();
+      setIsLoading(false);
+    } catch (error) {
+      console.log('Error fetching posts:', error);
+      setIsLoading(false);
     }
   };
 
 
-  useEffect(() => {
-    // Fetch posts data from Redux store
-    dispatch(fetchPosts());
-  }, []);
-
-  useEffect(() => {
-    // Update likedPosts state with postIds that the current user has liked
-    const likedPostIds = postsData.reduce((acc, post) => {
-      if (post.likes.includes(firebase.auth().currentUser.uid)) {
-        acc.push(post.postId);
+  const getUsername = async (uid) => {
+    try {
+      const userSnapshot = await firebase.firestore().collection('users').doc(uid).get();
+      if (userSnapshot.exists) {
+        const userData = userSnapshot.data();
+        return userData.username;
       }
-      return acc;
-    }, []);
-    setLikedPosts(likedPostIds);
-  }, [postsData]);
+      return '';
+    } catch (error) {
+      console.log('Error fetching username:', error);
+      return '';
+    }
+  };
 
-  if (status === 'loading') {
-    return <Text>Loading...</Text>;
-  }
+  const getProfilePicture = async (uid) => {
+    try {
+      const userSnapshot = await firebase.firestore().collection('users').doc(uid).get();
+      if (userSnapshot.exists) {
+        const userData = userSnapshot.data();
+        return userData.profilePicture;
+      }
+      return '';
+    } catch (error) {
+      console.log('Error fetching profile picture:', error);
+      return '';
+    }
+  };
 
-  if (status === 'failed') {
-    return <Text>Error: {error}</Text>;
-  }
+
+
+  const fetchLikedPosts = async () => {
+    try {
+      const currentUserUid = firebase.auth().currentUser.uid;
+      const snapshot = await firebase.firestore().collection('posts').where('likes', 'array-contains', currentUserUid).get();
+      const likedPostIds = snapshot.docs.map(doc => doc.id);
+      setLikedPosts(likedPostIds);
+    } catch (error) {
+      console.log('Error fetching liked posts:', error);
+    }
+  };
+
+  const fetchInspo = async () => {
+    try {
+      const currentUserUid = firebase.auth().currentUser.uid;
+      const snapshot = (await firebase.firestore().collection('users').doc(currentUserUid).get()).data().inspo;
+      setInspoPosts(snapshot);
+    } catch (error) {
+      console.log('Error fetching liked posts:', error);
+    }
+  };
+
+
+  const renderItem = ({ item }) => {
+    const timestamp = item.timestamp.toDate();
+
+    // Format the date as "DD.MM.YYYY"
+    const formattedDate = timestamp.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
+    const formattedTime = timestamp.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric'
+    });
+
+    return (
+      <View style={styles.cardView}>
+        <View style={styles.topCard}>
+          <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.nickname}>{item.username}</Text>
+                <Text style={styles.date}>{formattedDate} · {formattedTime}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <Image style={styles.image} source={{ uri: item.imageUrl }} />
+        </View>
+        <View style={[styles.topCard, { justifyContent: 'space-between', marginBottom: 5 }]}>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => handleLikeButtonPress(item)}>
+              <Ionicons
+                name={likedPosts.includes(item.postId) ? 'heart' : 'heart-outline'}
+                size={28}
+                color={likedPosts.includes(item.postId) ? '#fb3959' : 'white'}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => navigation.navigate('CommentsScreen', { postId: item.postId })}>
+              <Ionicons name={'chatbubble-outline'} size={25} color={'white'} />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => handleInspoButtonPress(item)}>
+              <Ionicons
+                name={inspoPosts.includes(item.postId) ? 'bookmark' : 'bookmark-outline'}
+                size={25}
+                color={'white'}
+              />
+            </TouchableOpacity>
+          </View>
+          <View>
+            <TouchableOpacity onPress={() => navigation.navigate('GarmentsScreen', { postId: item.postId })}>
+              <Ionicons name={'shirt-outline'} size={25} color={'white'} />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={{ marginHorizontal: 10 }}>
+          {item.description && (
+            <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+              <Text style={styles.nickname}>{item.username}: </Text>
+              <Text style={styles.description}>{item.description}</Text>
+            </View>
+          )}
+          <Text style={styles.description}>liked by {item.likes.length} fashion icons.</Text>
+        </View>
+      </View>
+    )
+  };
+
+  const renderLoader = () => {
+    return (
+      isLoading ?
+        <View style={styles.loaderStyle}>
+          <ActivityIndicator size="large" color="#aaa" />
+        </View> : null
+    );
+  };
+
+  const loadMoreItem = () => {
+    setCurrentPage(currentPage + 1);
+  };
+
+  useEffect(() => {
+    // Fetch initial posts data
+    fetchPosts();
+  }, [currentPage]);
+
 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         data={postsData}
         keyExtractor={item => item.postId}
-        renderItem={({ item }) =>
-          <View style={styles.cardView}>
-            <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
-              <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
-                  <Text style={styles.nickname}>{item.username}</Text>
-                </View>
-              </TouchableOpacity>
-              <View>
-                <TouchableOpacity onPress={() => handleFollowButtonPress(item)}>
-                  <Ionicons name={'add'} size={27} color={'white'} />
-                </TouchableOpacity>
-              </View>
-            </View>
-            <View>
-              <Image style={styles.image} source={{ uri: item.imageUrl }} />
-            </View>
-            <View style={[styles.topCard, { justifyContent: 'space-between' }]}>
-              <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity style={{ marginRight: 15 }} onPress={() => handleLikeButtonPress(item)}>
-                  <Ionicons
-                    name={'heart'}
-                    size={30}
-                    color={likedPosts.includes(item.postId) ? 'red' : 'white'}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity style={{ marginRight: 15 }} onPress={() => navigation.navigate('CommentsScreen', { postId: item.postId })}>
-                  <Ionicons name={'chatbubble'} size={27} color={'white'} />
-                </TouchableOpacity>
-                <TouchableOpacity style={{ marginRight: 15 }}>
-                  <Ionicons name={'paper-plane'} size={27} color={'white'} />
-                </TouchableOpacity>
-              </View>
-              <View>
-                <TouchableOpacity>
-                  <Ionicons name={'shirt'} size={27} color={'white'} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        }
+        renderItem={renderItem}
+        ListFooterComponent={renderLoader}
+        onEndReached={loadMoreItem}
+        onEndReachedThreshold={0}
       />
     </SafeAreaView >
   )
@@ -132,7 +293,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '98%',
-    height: 400,
+    aspectRatio: 1,
     resizeMode: 'cover',
     borderRadius: 10,
     alignSelf: 'center'
@@ -144,17 +305,9 @@ const styles = StyleSheet.create({
     borderRadius: 100
   },
   cardView: {
-    marginBottom: 40,
+    marginBottom: 20,
     width: '100%',
-    height: 530,
-    //borderRadius: 20,
-    //borderWidth: 2,
-    //borderColor: '#434343',
-    //backgroundColor: '#1F1F1F',
-    //justifyContent: 'center',
     alignSelf: 'center',
-    //alignItems: 'center',
-    //padding: 10
   },
   topCard: {
     flexDirection: 'row',
@@ -165,11 +318,10 @@ const styles = StyleSheet.create({
   },
   nickname: {
     color: 'white',
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: 'Helvetica',
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginLeft: 10,
+    //textAlign: 'center',
   },
   loadingContainer: {
     alignItems: 'center',
@@ -177,4 +329,22 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 10,
   },
+  loaderStyle: {
+    marginVertical: 16,
+    alignItems: "center",
+  },
+  date: {
+    color: 'grey',
+    fontSize: 12,
+    fontFamily: 'Helvetica',
+    fontWeight: 'regular',
+    //textAlign: 'center',
+  },
+  description: {
+    color: 'white',
+    fontSize: 15,
+    fontFamily: 'Helvetica',
+    fontWeight: 'regular',
+    //textAlign: 'center',
+  }
 })
