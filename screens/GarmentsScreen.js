@@ -1,8 +1,9 @@
 import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, ScrollView } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
+import UserContext from '../context/UserContext';
 
 const GarmentsScreen = ({ route }) => {
     const { postId } = route.params;
@@ -11,6 +12,7 @@ const GarmentsScreen = ({ route }) => {
     const [alternatives, setAlternatives] = useState([]);
     const [alternativeToDelete, setAlternativeToDelete] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const { currentUser } = useContext(UserContext);
 
     useEffect(() => {
         firebase.firestore().collection('posts').doc(postId).get()
@@ -22,34 +24,29 @@ const GarmentsScreen = ({ route }) => {
                 }
             })
             .catch(error => console.log(error));
+        fetchAlternatives();
     }, [postId]);
 
     const fetchAlternatives = async () => {
         try {
-            const alternativesSnapshot = await firebase.firestore().collection('posts').doc(postId).collection('alternatives').get();
-            const alternativesData = alternativesSnapshot.docs.map(async doc => {
-                const alternativeData = doc.data();
-                const userData = await firebase.firestore().collection('users').doc(alternativeData.uid).get();
-                const userDataValue = userData.data();
-                return {
-                    ...alternativeData,
-                    username: userDataValue.username, // Replace 'username' with the actual field name in the users collection for username
-                    userProfilePicture: userDataValue.profilePicture, // Replace 'profilePicture' with the actual field name in the users collection for profile picture
-                    alternativeId: doc.id,
-                };
-            });
-            Promise.all(alternativesData).then(result => {
-                setAlternatives(result);
-                setIsLoading(false);
-            });
+            const snapshot = await firebase
+                .firestore()
+                .collection('posts')
+                .doc(postId)
+                .collection('alternatives')
+                .get();
+
+            const alternatives = snapshot.docs.map(doc => ({
+                alternativeId: doc.id,
+                ...doc.data(),
+            }));
+
+            setAlternatives(alternatives);
+            setIsLoading(false);
         } catch (error) {
-            console.error('Error fetching alternatives from Firebase:', error);
+            console.error('Error fetching alternatives:', error);
         }
     };
-
-    useEffect(() => {
-        fetchAlternatives();
-    }, [postId]);
 
 
     const addAlternative = async () => {
@@ -60,10 +57,13 @@ const GarmentsScreen = ({ route }) => {
 
             // Add relevant data to Firestore database
             await firebase.firestore().collection('posts').doc(postId).collection('alternatives').doc(alternativeId).set({
-                uid: firebase.auth().currentUser.uid, // Replace with the user ID
-                alternative: alternative,
-                timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
+                uid: currentUser.uid, // Replace with the user ID
+                username: currentUser.username, // Replace with the user's username
+                profilePicture: currentUser.profilePicture, // Replace with the user's profile picture URL
+                alternative: alternative, // Replace with the comment state value
+                timeStamp: firebase.firestore.FieldValue.serverTimestamp(), // Replace with the current UNIX timestamp
             });
+
             setAlternative('');
             await fetchAlternatives();
             return alternativeId;
@@ -127,7 +127,7 @@ const GarmentsScreen = ({ route }) => {
         return (
             <TouchableOpacity onLongPress={() => handleAlternativeLongPress(item.alternativeId)}>
                 <View style={styles.alternativeContainer}>
-                    <Image source={{ uri: item.userProfilePicture }} style={styles.avatar} />
+                    <Image source={{ uri: item.profilePicture }} style={styles.avatar} />
                     <View style={styles.alternativeContentContainer}>
                         <Text style={styles.username}>{item.username}</Text>
                         <Text style={styles.alternative}>{item.alternative}</Text>
