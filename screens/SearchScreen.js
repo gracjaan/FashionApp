@@ -133,8 +133,10 @@ const styles = StyleSheet.create({
   userContainer: {
     flexDirection: 'row',
     marginBottom: 8,
-    backgroundColor: '#1F1F1F',
-    borderRadius: 10,
+    //backgroundColor: '#1F1F1F',
+    borderBottomWidth: 1,
+    borderBottomColor: '#434343',
+    //borderRadius: 10,
     padding: 10,
     width: '90%',
     alignSelf: 'center',
