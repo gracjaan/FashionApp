@@ -95,42 +95,36 @@ const SecondRoute = () => {
 
     return (
         <View>
-            {[...topLinks].map((link) => (
-                <View style={styles.rowContainer}>
-                    <View style={styles.square}>
-                        <Ionicons name={'arrow-up'} size={27} color={'white'} />
-                    </View>
-                    <View style={styles.linkContainer}>
-                        <Text style={styles.textSecond} key={link}>
+            <View style={{marginLeft: 20}}>
+                <Text style={styles.textSecond}>Tops</Text>
+                {[...topLinks].map((link) => (
+                    <View >
+                        <Text style={styles.link} key={link}>
                             {link}
                         </Text>
                     </View>
-                </View>
-            ))}
-            {[...bottomLinks].map((link) => (
-                <View style={styles.rowContainer}>
-                    <View style={styles.square}>
-                        <Ionicons name={'arrow-down'} size={27} color={'white'} />
-                    </View>
-                    <View style={styles.linkContainer}>
-                        <Text style={styles.textSecond} key={link}>
+                ))}
+            </View>
+            <View style={{marginLeft: 20, marginTop: 20}}>
+                <Text style={styles.textSecond}>Bottoms</Text>
+                {[...bottomLinks].map((link) => (
+                    <View >
+                        <Text style={styles.link} key={link}>
                             {link}
                         </Text>
                     </View>
-                </View>
-            ))}
-            {[...accessoryLinks].map((link) => (
-                <View style={styles.rowContainer}>
-                    <View style={styles.square}>
-                        <Ionicons name={'arrow-up'} size={27} color={'white'} />
-                    </View>
-                    <View style={styles.linkContainer}>
-                        <Text style={styles.textSecond} key={link}>
+                ))}
+            </View>
+            <View style={{marginLeft: 20, marginTop: 20}}>
+                <Text style={styles.textSecond}>Accesories</Text>
+                {[...accessoryLinks].map((link) => (
+                    <View >
+                        <Text style={styles.link} key={link}>
                             {link}
                         </Text>
                     </View>
-                </View>
-            ))}
+                ))}
+            </View>
         </View>
     );
 };
@@ -437,7 +431,7 @@ const ProfileCardScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.textcontainer}>
                     <Text style={styles.nickname}>{name}</Text>
-                    <Text style={[styles.nickname, {fontWeight: 'regular', marginTop: 5}]}>@{username}</Text>
+                    <Text style={[styles.nickname, { fontWeight: 'regular', marginTop: 5 }]}>@{username}</Text>
                 </View>
             </View>
             <View style={styles.statscontainer}>
@@ -594,5 +588,13 @@ const styles = StyleSheet.create({
         marginTop: 10,
         width: '35%',
     },
+    link: {
+        color: 'grey',
+        fontSize: 16,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        //textAlign: 'center',
+        textDecorationLine: 'underline',
+    }
 
 })
