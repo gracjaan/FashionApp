@@ -2,14 +2,11 @@ import { View, Text, SafeAreaView, StyleSheet, FlatList, TouchableOpacity, Activ
 import React, { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchPosts, addLike, removeLike, addFollow, removeFollow } from '../redux/postsSlice';
-import { Provider } from 'react-redux';
+import { Ionicons } from '@expo/vector-icons';
 import 'firebase/compat/firestore';
 import 'firebase/auth';
-import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
+import PostItem from '../comp/PostItem';
 
 
 const FeedScreen = ({ navigation }) => {
@@ -181,73 +178,16 @@ const FeedScreen = ({ navigation }) => {
 
 
   const renderItem = ({ item }) => {
-    const timestamp = item.timestamp.toDate();
-
-    // Format the date as "DD.MM.YYYY"
-    const formattedDate = timestamp.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-
-    const formattedTime = timestamp.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric'
-    });
-
     return (
-      <View style={styles.cardView}>
-        <View style={styles.topCard}>
-          <TouchableOpacity onPress={() => navigation.navigate('UserScreen', { uid: item.uid })}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image style={styles.avatar} source={{ uri: item.profilePicture }} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.nickname}>{item.username}</Text>
-                <Text style={styles.date}>{formattedDate} · {formattedTime}</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <Image style={styles.image} source={{ uri: item.imageUrl }} />
-        </View>
-        <View style={[styles.topCard, { justifyContent: 'space-between', marginBottom: 5 }]}>
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => handleLikeButtonPress(item)}>
-              <Ionicons
-                name={likedPosts.includes(item.postId) ? 'heart' : 'heart-outline'}
-                size={28}
-                color={likedPosts.includes(item.postId) ? '#fb3959' : 'white'}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => navigation.navigate('CommentsScreen', { postId: item.postId })}>
-              <Ionicons name={'chatbubble-outline'} size={25} color={'white'} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ marginRight: 10 }} onPress={() => handleInspoButtonPress(item)}>
-              <Ionicons
-                name={inspoPosts.includes(item.postId) ? 'bookmark' : 'bookmark-outline'}
-                size={25}
-                color={'white'}
-              />
-            </TouchableOpacity>
-          </View>
-          <View>
-            <TouchableOpacity onPress={() => navigation.navigate('GarmentsScreen', { postId: item.postId })}>
-              <Ionicons name={'shirt-outline'} size={25} color={'white'} />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={{ marginHorizontal: 10 }}>
-          {item.description && (
-            <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-              <Text style={styles.nickname}>{item.username}: </Text>
-              <Text style={styles.description}>{item.description}</Text>
-            </View>
-          )}
-          <Text style={styles.description}>liked by {item.likes.length} fashion icons.</Text>
-        </View>
-      </View>
-    )
+      <PostItem
+        item={item}
+        likedPosts={likedPosts}
+        inspoPosts={inspoPosts}
+        handleLikeButtonPress={handleLikeButtonPress}
+        handleInspoButtonPress={handleInspoButtonPress}
+        navigation={navigation}
+      />
+    );
   };
 
   const renderLoader = () => {
