@@ -1,13 +1,10 @@
 import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, FlatList, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Header, Avatar } from 'react-native-elements';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
 import { Image } from 'expo-image';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 const FirstUser = ({ user, navigation }) => {
     const [posts, setPosts] = useState([]);
@@ -46,7 +43,7 @@ const FirstUser = ({ user, navigation }) => {
                             width: '33.33%', // Set a fixed width for each item (3 items in a row)
                             aspectRatio: 1, // Maintain the aspect ratio of the image
                         }}
-                        onPress={() => navigation.navigate('PostScreen', { postId: item.postId })}
+                        onPress={() => navigation.navigate('PostScreen', { item: item })}
                     >
                         <Image
                             source={{ uri: item.imageUrl }}
