@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
@@ -11,180 +11,78 @@ import PostItem from '../comp/PostItem';
 
 const FeedScreen = ({ navigation }) => {
   const [postsData, setPostsData] = useState([]);
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [inspoPosts, setInspoPosts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [lastDocument, setLastDocument] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleLikeButtonPress = async (post) => {
-    try {
-      const currentUserUid = firebase.auth().currentUser.uid;
-
-      if (likedPosts.includes(post.postId)) {
-        // If post is already liked, remove the like
-        await firebase.firestore().collection('posts').doc(post.postId).update({
-          likes: firebase.firestore.FieldValue.arrayRemove(currentUserUid)
-        });
-
-        setLikedPosts(likedPosts.filter(postId => postId !== post.postId));
-      } else {
-        // If post is not liked, add the like
-        await firebase.firestore().collection('posts').doc(post.postId).update({
-          likes: firebase.firestore.FieldValue.arrayUnion(currentUserUid)
-        });
-
-        setLikedPosts([...likedPosts, post.postId]);
-      }
-    } catch (error) {
-      console.log('Error updating like status:', error);
-    }
-  };
-
-  const handleInspoButtonPress = async (post) => {
-    try {
-      const currentUserUid = firebase.auth().currentUser.uid;
-      const userRef = firebase.firestore().collection('users').doc(currentUserUid);
-      const userSnapshot = await userRef.get();
-      const inspoArray = userSnapshot.data().inspo;
-
-      if (inspoArray.includes(post.postId)) {
-        // If post is already liked, remove the like
-        await userRef.update({
-          inspo: firebase.firestore.FieldValue.arrayRemove(post.postId)
-        });
-
-        setInspoPosts(inspoPosts.filter(postId => postId !== post.postId));
-      } else {
-        // If post is not liked, add the like
-        await userRef.update({
-          inspo: firebase.firestore.FieldValue.arrayUnion(post.postId)
-        });
-        setInspoPosts([...inspoPosts, post.postId]);
-      }
-    } catch (error) {
-      console.log('Error updating inspo status:', error);
-    }
-  };
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
-      const postsRef = firebase.firestore().collection('posts');
-      let query = postsRef.orderBy('timestamp', 'desc');
 
+      // Set the query to fetch posts starting from the last document
+      let query = firebase.firestore()
+        .collection('posts')
+        .orderBy('timestamp', 'desc')
+        .limit(10);
+
+      // If there's a last document, fetch posts after that document
       if (lastDocument) {
-        console.log('lastDocument exists');
         query = query.startAfter(lastDocument);
       }
 
-      query = query.limit(5);
+      const snapshot = await query.get();
 
-      const postsSnapshot = await query.get();
+      const newPosts = snapshot.docs.map(doc => ({
+        postId: doc.id, // Include the postId as a field in each post object
+        ...doc.data()
+      }));
 
-      if (postsSnapshot.empty) {
-        setIsLoading(false);
-        return;
+      // Update the last document
+      if (snapshot.docs.length > 0) {
+        setLastDocument(snapshot.docs[snapshot.docs.length - 1]);
+      } else {
+        setLastDocument(null);
       }
 
-      const newPostsData = [];
-
-      for (const doc of postsSnapshot.docs) {
-        const postData = doc.data();
-        const username = await getUsername(postData.uid);
-        const profilePicture = await getProfilePicture(postData.uid);
-
-        newPostsData.push({ ...postData, username, profilePicture, key: doc.id });
-      }
-
-      let first = 0;
-      let second = 0;
-
-      setPostsData(prevPostsData => {
-        const uniquePosts = [...prevPostsData];
-        newPostsData.forEach(newPost => {
-          first += 1;
-          if (!uniquePosts.some(post => post.key === newPost.key)) {
-            uniquePosts.push(newPost);
-            second += 1;
-          }
-        });
-        return uniquePosts;
-      });
-      console.log('first:', first);
-      console.log('second:', second);
-
-      setLastDocument(postsSnapshot.docs[postsSnapshot.docs.length - 1]);
-      fetchLikedPosts();
-      fetchInspo();
-      setIsLoading(false);
+      // Append the new posts to the existing posts
+      setPostsData(prevPosts => [...prevPosts, ...newPosts]);
     } catch (error) {
-      console.log('Error fetching posts:', error);
+      console.error('Error fetching posts:', error);
+    } finally {
       setIsLoading(false);
     }
   };
 
-
-  const getUsername = async (uid) => {
+  const refreshPosts = async () => {
     try {
-      const userSnapshot = await firebase.firestore().collection('users').doc(uid).get();
-      if (userSnapshot.exists) {
-        const userData = userSnapshot.data();
-        return userData.username;
-      }
-      return '';
+      setIsRefreshing(true);
+      setLastDocument(null);
+      setPostsData([]);
+
+      await fetchPosts();
     } catch (error) {
-      console.log('Error fetching username:', error);
-      return '';
+      console.error('Error refreshing posts:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
-  const getProfilePicture = async (uid) => {
-    try {
-      const userSnapshot = await firebase.firestore().collection('users').doc(uid).get();
-      if (userSnapshot.exists) {
-        const userData = userSnapshot.data();
-        return userData.profilePicture;
-      }
-      return '';
-    } catch (error) {
-      console.log('Error fetching profile picture:', error);
-      return '';
+  // Load more posts when reaching the end of the list
+  const loadMoreItems = () => {
+    if (!isLoading && lastDocument) {
+      fetchPosts();
     }
   };
 
-
-
-  const fetchLikedPosts = async () => {
-    try {
-      const currentUserUid = firebase.auth().currentUser.uid;
-      const snapshot = await firebase.firestore().collection('posts').where('likes', 'array-contains', currentUserUid).get();
-      const likedPostIds = snapshot.docs.map(doc => doc.id);
-      setLikedPosts(likedPostIds);
-    } catch (error) {
-      console.log('Error fetching liked posts:', error);
-    }
-  };
-
-  const fetchInspo = async () => {
-    try {
-      const currentUserUid = firebase.auth().currentUser.uid;
-      const snapshot = (await firebase.firestore().collection('users').doc(currentUserUid).get()).data().inspo;
-      setInspoPosts(snapshot);
-    } catch (error) {
-      console.log('Error fetching liked posts:', error);
-    }
-  };
-
+  useEffect(() => {
+    // Fetch initial posts
+    fetchPosts();
+  }, []);
 
   const renderItem = ({ item }) => {
     return (
       <PostItem
         item={item}
-        likedPosts={likedPosts}
-        inspoPosts={inspoPosts}
-        handleLikeButtonPress={handleLikeButtonPress}
-        handleInspoButtonPress={handleInspoButtonPress}
         navigation={navigation}
       />
     );
@@ -192,22 +90,13 @@ const FeedScreen = ({ navigation }) => {
 
   const renderLoader = () => {
     return (
-      isLoading ?
+      isLoading ? (
         <View style={styles.loaderStyle}>
           <ActivityIndicator size="large" color="#aaa" />
-        </View> : null
+        </View>
+      ) : null
     );
   };
-
-  const loadMoreItem = () => {
-    setCurrentPage(currentPage + 1);
-  };
-
-  useEffect(() => {
-    // Fetch initial posts data
-    fetchPosts();
-  }, [currentPage]);
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -215,13 +104,20 @@ const FeedScreen = ({ navigation }) => {
         data={postsData}
         keyExtractor={item => item.postId}
         renderItem={renderItem}
-        ListFooterComponent={renderLoader}
-        onEndReached={loadMoreItem}
-        onEndReachedThreshold={0}
+        ListFooterComponent={isLoading && renderLoader}
+        onEndReached={loadMoreItems}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refreshPosts}
+            colors={['#aaa']} // Customize the refresh indicator colors if needed
+          />
+        }
       />
-    </SafeAreaView >
-  )
-}
+    </SafeAreaView>
+  );
+};
 
 
 export default FeedScreen
