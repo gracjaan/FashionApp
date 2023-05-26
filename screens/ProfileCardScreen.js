@@ -59,13 +59,13 @@ const ProfileCardScreen = ({ navigation }) => {
                     <Text style={styles.text}>{currentUser.posts.length}</Text>
                     <Text style={styles.text}>posts</Text>
                 </View>
-                <TouchableOpacity onPress={() => navigation.navigate('FollowersScreen', { userId: firebase.auth().currentUser.uid })}>
+                <TouchableOpacity onPress={() => navigation.navigate('FollowersScreen', { followers: currentUser.followers })}>
                     <View>
                         <Text style={styles.text}>{currentUser.followers.length}</Text>
                         <Text style={styles.text}>followers</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('FollowingScreen', { userId: firebase.auth().currentUser.uid })}>
+                <TouchableOpacity onPress={() => navigation.navigate('FollowingScreen', { followings: currentUser.following })}>
                     <View>
                         <Text style={styles.text}>{currentUser.following.length}</Text>
                         <Text style={styles.text}>following</Text>
