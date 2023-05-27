@@ -34,6 +34,16 @@ const ProfileCardScreen = ({ navigation }) => {
 
     const {currentUser} = useContext(UserContext);
 
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <TouchableOpacity onPress={() => navigation.navigate('EditProfileScreen')}>
+                    <Ionicons name="ellipsis-horizontal" size={25} color="white" style={{ marginRight: 10 }} />
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.personalcontainer}>
