@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image, Modal } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useContext } from 'react'
 import firebase from 'firebase/compat/app';
@@ -17,6 +17,8 @@ const AddPostScreen = () => {
   const [bottom, setBottom] = useState('')
   const [accessory, setAccessory] = useState('')
   const { currentUser } = useContext(UserContext);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isPosting, setIsPosting] = useState(false); 
 
   const storageRef = firebase.storage().ref();
 
@@ -96,12 +98,44 @@ const AddPostScreen = () => {
   };
 
   const onPostButtonPress = async () => {
+    if (isPosting) {
+      // Post button is already clicked and in progress, do nothing
+      return;
+    }
+
     if (isImageSelected && top && bottom) {
-      await uploadImageToFirebase(image);
+      setIsPosting(true); // Set isPosting state to true to indicate a post is in progress
+
+      const downloadUrl = await uploadImageToFirebase(image);
+      if (downloadUrl) {
+        // Show pop-up window for 2 seconds
+        setShowPopup(true);
+        setTimeout(() => {
+          setShowPopup(false);
+          // Reset the page
+          setIsImageSelected(false);
+          setImage('');
+          setDes('');
+          setTop('');
+          setBottom('');
+          setAccessory('');
+          setIsPosting(false); // Reset isPosting state to false after the post is completed
+        }, 2000);
+      } else {
+        setIsPosting(false); // Reset isPosting state to false if there was an error in uploading the image
+      }
     } else {
-      Alert.alert('Please select required fields.', 'You must select an image and provide links for top and bottom.' )
+      Alert.alert(
+        'Incomplete Fields',
+        'Please select an image and provide links for top and bottom.',
+        [
+          { text: 'OK' }
+        ],
+        { cancelable: false }
+      );
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -188,11 +222,25 @@ const AddPostScreen = () => {
         <View style={styles.buttonView}>
           <TouchableOpacity
             onPress={onPostButtonPress}
-            style={styles.continue}
+            style={[styles.continue, isPosting && styles.disabledButton]} // Apply disabledButton style if isPosting is true
+            disabled={isPosting}
           >
             <Text style={styles.description}>Post</Text>
           </TouchableOpacity>
         </View>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showPopup}
+          onRequestClose={() => setShowPopup(false)}
+        >
+          <View style={styles.popupContainer}>
+            <View style={styles.popup}>
+              <Ionicons name="checkmark-circle-outline" size={100} color="green" />
+              <Text style={styles.popupText}>Image uploaded successfully!</Text>
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
@@ -285,5 +333,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Helvetica',
     fontWeight: 'regular',
-  }
+  },
+  popupContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  popup: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  popupText: {
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  disabledButton: {
+    opacity: 0.6, // Reduce the opacity of the disabled button
+  },
 })
