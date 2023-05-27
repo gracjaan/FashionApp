@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native'
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native'
 import React, { useEffect, useState, useContext } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
@@ -116,9 +116,47 @@ const ThirdProfile = () => {
         setIsImageSelected(false);
     };
 
+    const deleteItem = async (wishlistId) => {
+        try {
+            // Delete the Wishlist item from Firestore
+            const userId = currentUser.uid;
+            const wishlistRef = firebase.firestore().collection('users').doc(userId).collection('wishlist').doc(wishlistId);
+            const wishlistDoc = await wishlistRef.get();
+
+            // Delete the image from Firebase Storage
+            const storageRef = firebase.storage().refFromURL(wishlistDoc.data().imageUrl);
+            await storageRef.delete();
+
+            await wishlistRef.delete();
+
+            console.log('Wishlist item and image deleted successfully');
+
+            // Refresh the Wishlist data
+            fetchWishlist();
+        } catch (error) {
+            console.error('Error deleting Wishlist item and image:', error);
+        }
+    };
+
+
+    const handleDelete = (wishlistId) => {
+        Alert.alert(
+            'Delete item',
+            'Are you sure you want to delete this item?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => deleteItem(wishlistId),
+                },
+            ],
+        );
+    };
+
     const renderItem = ({ item }) => {
         return (
-            <View style={styles.rowContainer}>
+            <TouchableOpacity onLongPress={() => handleDelete(item.id)} style={styles.rowContainer}>
                 <Image
                     style={styles.square}
                     source={{ uri: item.imageUrl }}
@@ -126,7 +164,7 @@ const ThirdProfile = () => {
                 <View style={styles.linkContainer}>
                     <Text style={styles.textSecond}>{item.link}</Text>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
