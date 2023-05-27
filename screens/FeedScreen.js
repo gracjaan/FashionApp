@@ -18,32 +18,35 @@ const FeedScreen = ({ navigation }) => {
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
-
+  
       // Set the query to fetch posts starting from the last document
       let query = firebase.firestore()
         .collection('posts')
         .orderBy('timestamp', 'desc')
         .limit(10);
-
+  
       // If there's a last document, fetch posts after that document
       if (lastDocument) {
         query = query.startAfter(lastDocument);
+      } else {
+        // Reset the posts data when lastDocument is null
+        setPostsData([]);
       }
-
+  
       const snapshot = await query.get();
-
+  
       const newPosts = snapshot.docs.map(doc => ({
         postId: doc.id, // Include the postId as a field in each post object
         ...doc.data()
       }));
-
+  
       // Update the last document
       if (snapshot.docs.length > 0) {
         setLastDocument(snapshot.docs[snapshot.docs.length - 1]);
       } else {
         setLastDocument(null);
       }
-
+  
       // Append the new posts to the existing posts
       setPostsData(prevPosts => [...prevPosts, ...newPosts]);
     } catch (error) {
@@ -51,14 +54,11 @@ const FeedScreen = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   const refreshPosts = async () => {
     try {
       setIsRefreshing(true);
-      setLastDocument(null);
-      setPostsData([]);
-
       await fetchPosts();
     } catch (error) {
       console.error('Error refreshing posts:', error);
