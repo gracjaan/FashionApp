@@ -1,4 +1,4 @@
-import { View, Image, FlatList, TouchableOpacity } from 'react-native'
+import { View, Image, FlatList, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState, useContext } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
@@ -22,10 +22,43 @@ const FourthProfile = ({ navigation }) => {
                 }
             }
             const sortedPosts = posts.sort((a, b) => b.timestamp - a.timestamp);
+            console.log('1 '+sortedPosts.length)
             setPosts(sortedPosts);
+            console.log('2 '+posts.length)
         } catch (error) {
             console.error('Error fetching posts:', error);
         }
+    };
+
+    const removeItemFromInspo = async (postId) => {
+        try {
+          const userRef = firebase.firestore().collection('users').doc(currentUser.uid);
+          await userRef.update({
+            inspo: firebase.firestore.FieldValue.arrayRemove(postId),
+          });
+          console.log('Item removed from inspo list');
+
+          currentUser.inspo = currentUser.inspo.filter((item) => item !== postId);
+    
+          fetchPosts(); // Refresh the posts after removing the item
+        } catch (error) {
+          console.error('Error removing item from inspo list:', error);
+        }
+      };
+
+      const handleDelete = (postId) => {
+        Alert.alert(
+            'Remove inspo',
+            'Are you sure you want to remove this inspo?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Remove',
+                    style: 'destructive',
+                    onPress: () => removeItemFromInspo(postId),
+                },
+            ],
+        );
     };
 
     useEffect(() => {
@@ -45,6 +78,7 @@ const FourthProfile = ({ navigation }) => {
                             aspectRatio: 1, // Maintain the aspect ratio of the image
                         }}
                         onPress={() => navigation.navigate('PostScreen', { item: item })}
+                        onLongPress={() => handleDelete(item.postId)} // Handle long press to delete
                     >
                         <Image
                             source={{ uri: item.imageUrl }}
@@ -53,7 +87,7 @@ const FourthProfile = ({ navigation }) => {
                     </TouchableOpacity>
                 )}
 
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(item) => item.postId}
                 contentContainerStyle={{ flexGrow: 1 }}
             />
         </View>
