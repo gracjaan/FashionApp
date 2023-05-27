@@ -11,6 +11,8 @@ import 'firebase/auth';
 const PostItem = ({ item, navigation }) => {
 
     const { currentUser } = useContext(UserContext);
+    const [isInspired, setIsInspired] = useState(currentUser.inspo.includes(item.postId));
+    const [isLiked, setIsLiked] = useState(item.likes.includes(currentUser.uid));
 
     const timestamp = item.timestamp.toDate();
 
@@ -47,13 +49,13 @@ const PostItem = ({ item, navigation }) => {
                         likes: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
                     });
                 }
+                setIsLiked(!likedByUser);
             }
         } catch (error) {
             console.error('Error toggling like:', error);
         }
     };
 
-    const [isInspired, setIsInspired] = useState(currentUser.inspo.includes(item.postId));
 
     // Function to handle toggling the bookmark action
     const toggleBookmark = async () => {
@@ -93,6 +95,7 @@ const PostItem = ({ item, navigation }) => {
     useEffect(() => {
         // Update the isInspired state when the currentUser changes
         setIsInspired(currentUser.inspo.includes(item.postId));
+        setIsLiked(item.likes.includes(currentUser.uid));
     }, [currentUser]);
 
     return (
@@ -115,9 +118,9 @@ const PostItem = ({ item, navigation }) => {
                 <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity style={{ marginRight: 10 }} onPress={toggleLike}>
                         <Ionicons
-                            name={item.likes.includes(currentUser.uid) ? 'heart' : 'heart-outline'}
+                            name={isLiked ? 'heart' : 'heart-outline'}
                             size={28}
-                            color={item.likes.includes(currentUser.uid) ? '#fb3959' : 'white'}
+                            color={isLiked ? '#fb3959' : 'white'}
                         />
                     </TouchableOpacity>
                     <TouchableOpacity style={{ marginRight: 10 }} onPress={() => navigation.navigate('CommentsScreen', { postId: item.postId })}>
