@@ -89,7 +89,8 @@ const GarmentsScreen = ({ route }) => {
         }
     };
 
-    const handleAlternativeLongPress = (alternativeId) => {
+    const handleAlternativeLongPress = (alternative) => {
+        if (alternative.uid !== currentUser.uid) return;
         Alert.alert(
             'Delete alternative?',
             'Are you sure you want to delete this alternative?',
@@ -101,7 +102,7 @@ const GarmentsScreen = ({ route }) => {
                 {
                     text: 'Delete',
                     onPress: () => {
-                        deleteAlternative(alternativeId);
+                        deleteAlternative(alternative.alternativeId);
                     },
                     style: 'destructive',
                 },
@@ -112,7 +113,7 @@ const GarmentsScreen = ({ route }) => {
 
     const renderAlternativeItem = ({ item }) => {
         return (
-            <TouchableOpacity onLongPress={() => handleAlternativeLongPress(item.alternativeId)}>
+            <TouchableOpacity onLongPress={() => handleAlternativeLongPress(item)}>
                 <View style={styles.alternativeContainer}>
                     <Image source={{ uri: item.profilePicture }} style={styles.avatar} />
                     <View style={styles.alternativeContentContainer}>

@@ -81,7 +81,8 @@ const CommentsScreen = ({ route }) => {
         }
     };
 
-    const handleCommentLongPress = (commentId) => {
+    const handleCommentLongPress = (comment) => {
+        if (comment.uid !== currentUser.uid) return;
         Alert.alert(
             'Delete comment?',
             'Are you sure you want to delete this comment?',
@@ -93,7 +94,7 @@ const CommentsScreen = ({ route }) => {
                 {
                     text: 'Delete',
                     onPress: () => {
-                        deleteComment(commentId);
+                        deleteComment(comment.commentId);
                     },
                     style: 'destructive',
                 },
@@ -105,7 +106,7 @@ const CommentsScreen = ({ route }) => {
 
     const renderCommentItem = ({ item }) => {
         return (
-            <TouchableOpacity onLongPress={() => handleCommentLongPress(item.commentId)}>
+            <TouchableOpacity onLongPress={() => handleCommentLongPress(item)}>
                 <View style={styles.commentContainer}>
                     <Image source={{ uri: item.profilePicture }} style={styles.avatar} />
                     <View style={styles.commentContentContainer}>
