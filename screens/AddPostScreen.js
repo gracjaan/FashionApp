@@ -120,7 +120,7 @@ const AddPostScreen = () => {
           setBottom('');
           setAccessory('');
           setIsPosting(false); // Reset isPosting state to false after the post is completed
-        }, 2000);
+        }, 1200);
       } else {
         setIsPosting(false); // Reset isPosting state to false if there was an error in uploading the image
       }
