@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, TouchableOpacity, Image, SafeAreaView, Text } from 'react-native';
+import { View, FlatList, StyleSheet, TouchableOpacity, Image, SafeAreaView, Text, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
@@ -8,6 +9,7 @@ import 'firebase/auth';
 const FollowersScreen = ({ route, navigation }) => {
     const { followers } = route.params;
     const [follow, setFollow] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchFollowers = async () => {
         try {
@@ -28,7 +30,7 @@ const FollowersScreen = ({ route, navigation }) => {
             }
 
             setFollow(followerDetails);
-            console.log(followerDetails);
+            setIsLoading(false);
         } catch (error) {
             console.error('Error fetching followers:', error);
         }
@@ -54,14 +56,35 @@ const FollowersScreen = ({ route, navigation }) => {
         );
     };
 
-    return (
-        <SafeAreaView style={styles.container}>
-            <View style={{ marginTop: 20 }}>
+    const renderFollowers = () => {
+        if (isLoading) {
+            return (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#aaa" />
+                </View>
+            );
+        } else if (followers.length === 0) {
+            return (
+                <View style={styles.noFollowersContainer}>
+                    <Ionicons name="ellipsis-horizontal" size={100} color="#aaa" style={{ marginBottom: 10 }} />
+                    <Text style={styles.noFollowersText}>apparently that user {"\n"} has no followers.</Text>
+                </View>
+            );
+        } else {
+            return (
                 <FlatList
                     data={follow}
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={renderItem}
                 />
+            );
+        }
+    };
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <View style={{ marginTop: 20 }}>
+                {renderFollowers()}
             </View>
         </SafeAreaView>
     );
@@ -105,6 +128,23 @@ const styles = StyleSheet.create({
     userInfo: {
         flex: 1,
         justifyContent: 'center',
+    },
+    noFollowersContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noFollowersText: {
+        color: 'grey',
+        fontSize: 16,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        textAlign: 'center',
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        marginBottom: 10,
     },
 });
 
