@@ -1,5 +1,6 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Image, Keyboard, TouchableOpacity, TextInput, Button } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Image, Keyboard, TouchableOpacity, TextInput, Button, Alert, Modal } from 'react-native'
 import React, { useState, useEffect } from 'react'
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
@@ -16,6 +17,7 @@ const EditProfileScreen = ({ navigation }) => {
     const [profilePicturedb, setProfilePicturedb] = useState('');
     const [usernamedb, setUsernamedb] = useState('');
     const [namedb, setNamedb] = useState('');
+    const [showPopup, setShowPopup] = useState(false);
 
     const updateProfile = async () => {
         try {
@@ -61,12 +63,33 @@ const EditProfileScreen = ({ navigation }) => {
 
 
     useEffect(() => {
-        // Use `setOptions` to update the button that we previously specified
-        // Now the button includes an `onPress` handler to update the count
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity onPress={() => { updateProfile() }}>
-                    <Text style={{ color: "#434343", marginRight: 10, fontFamily: 'Helvetica', fontSize: 20, fontWeight: 'bold' }}>Save</Text>
+                <TouchableOpacity onPress={() => {
+                    Alert.alert(
+                        'Save Changes',
+                        'Are you sure you want to save the changes?',
+                        [
+                            {
+                                text: 'Cancel',
+                                style: 'cancel',
+                            },
+                            {
+                                text: 'Save',
+                                onPress: () => {
+                                    updateProfile();
+                                    setShowPopup(true);
+                                    setTimeout(() => {
+                                        setShowPopup(false);
+                                    }, 1200);
+                                },
+                                style: 'default',
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }}>
+                    <Text style={{ color: "white", marginRight: 10, fontFamily: 'Helvetica', fontSize: 20 }}>Save</Text>
                 </TouchableOpacity>
             ),
         });
@@ -129,6 +152,29 @@ const EditProfileScreen = ({ navigation }) => {
         }
     };
 
+    const handleLogout = () => {
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Logout',
+                    onPress: () => {
+                        navigation.navigate('NameScreen');
+                        firebase.auth().signOut();
+                    },
+                    style: 'destructive',
+                },
+            ],
+            { cancelable: false }
+        );
+    };
+
+
     return (
         <SafeAreaView style={styles.container}>
             <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss() }}>
@@ -168,6 +214,22 @@ const EditProfileScreen = ({ navigation }) => {
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                <Text style={styles.logoutButtonText}>Log Out</Text>
+            </TouchableOpacity>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={showPopup}
+                onRequestClose={() => setShowPopup(false)}
+            >
+                <View style={styles.popupContainer}>
+                    <View style={styles.popup}>
+                        <Ionicons name="checkmark-circle-outline" size={100} color="green" />
+                        <Text style={styles.popupText}>Image uploaded successfully!</Text>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     )
 }
@@ -209,5 +271,34 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'Helvetica',
         marginTop: 2,
+    },
+    logoutButton: {
+        alignSelf: 'center',
+        marginBottom: 20,
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    logoutButtonText: {
+        color: 'red',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    popupContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    popup: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    popupText: {
+        marginTop: 10,
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 })
