@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, FlatList, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { Header, Avatar } from 'react-native-elements';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import firebase from 'firebase/compat/app';
@@ -8,20 +8,20 @@ import 'firebase/compat/storage';
 import 'firebase/auth';
 import { Image } from 'expo-image';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import UserContext from '../context/UserContext';
 import FirstUser from '../support/FirstUser';
 import SecondUser from '../support/SecondUser';
 import ThirdUser from '../support/ThirdUser';
 import FourthUser from '../support/FourthUser';
 
-const UserScreen = ({ route, navigation }) => {
-    console.log('UserScreen route.params', route.params);
-    
+const UserScreen = ({ route, navigation }) => {    
     const layout = useWindowDimensions();
     const { uid } = route.params;
     const [user, setUser] = useState(null);
     const [follow, setFollow] = useState(false);
+    const {currentUser} = useContext(UserContext);
 
-    const [index, setIndex] = React.useState(0);
+    const [index, setIndex] = useState(0);
 
     const [routes] = React.useState([
         { key: 'first', title: 'FITS' },
@@ -43,6 +43,7 @@ const UserScreen = ({ route, navigation }) => {
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 setUser({ uid: uid, ...userData });
+                setFollow(userData.followers.includes(currentUser.uid));
             }
         } catch (error) {
             console.error('Error fetching user', error);
@@ -51,7 +52,7 @@ const UserScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         fetchUser();
-    }, []);
+    }, [uid]);
 
     const addFollow = async ({ currentUserUid, otherUserUid }) => {
         // If no, add the current user's uid to the other user's followers array
@@ -129,18 +130,18 @@ const UserScreen = ({ route, navigation }) => {
             </View>
             <View style={styles.statscontainer}>
                 <View>
-                    <Text style={styles.text}>{user.posts.length}</Text>
+                    <Text style={styles.text}>{user.posts ? user.posts.length : 0}</Text>
                     <Text style={styles.text}>posts</Text>
                 </View>
                 <TouchableOpacity onPress={() => navigation.navigate('FollowersScreen', { followers: user.followers })}>
                     <View>
-                        <Text style={styles.text}>{user.followers.length}</Text>
+                        <Text style={styles.text}>{user.followers ? user.followers.length : 0}</Text>
                         <Text style={styles.text}>followers</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('FollowingScreen', { followings: user.following })}>
                     <View>
-                        <Text style={styles.text}>{user.following.length}</Text>
+                        <Text style={styles.text}>{user.following ? user.following.length : 0}</Text>
                         <Text style={styles.text}>following</Text>
                     </View>
                 </TouchableOpacity>
