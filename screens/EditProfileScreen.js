@@ -17,6 +17,7 @@ const EditProfileScreen = ({ navigation }) => {
     const [profilePicturedb, setProfilePicturedb] = useState('');
     const [usernamedb, setUsernamedb] = useState('');
     const [namedb, setNamedb] = useState('');
+    const [postsdb, setPostsdb] = useState('');
     const [showPopup, setShowPopup] = useState(false);
 
     const updateProfile = async () => {
@@ -39,11 +40,36 @@ const EditProfileScreen = ({ navigation }) => {
                 username: usernamedb,
             });
 
+            // Update the attributes of each post
+            await updatePosts();
+
             console.log('Profile updated successfully!');
         } catch (error) {
             console.error('Error updating profile:', error);
         }
     };
+
+    const updatePosts = async () => {
+        try {
+            const updatePromises = postsdb.map(async (postId) => {
+                const postRef = firebase.firestore().collection('posts').doc(postId);
+                const postDoc = await postRef.get();
+
+                if (postDoc.exists) {
+                    await postRef.update({
+                        username: usernamedb,
+                        profilePicture: profilePicturedb,
+                    });
+                }
+            });
+
+            await Promise.all(updatePromises);
+            console.log('All posts updated successfully!');
+        } catch (error) {
+            console.error('Error updating posts:', error);
+        }
+    };
+
 
     const compressAndResizeImage = async (uri) => {
         try {
@@ -95,27 +121,28 @@ const EditProfileScreen = ({ navigation }) => {
         });
     }, [navigation, updateProfile]);
 
-    useEffect(() => {
-        // Fetch the user's profile picture from Firebase
-        const fetchProfilePicture = async () => {
-            try {
-                const user = firebase.auth().currentUser; // Get the current user
-                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get(); // Fetch the user's document from the 'users' collection
-                if (userDoc.exists) {
-                    const userData = userDoc.data(); // Get the data from the user's document
-                    const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
-                    const username = userData.username;
-                    const name = userData.name; // Get the username from the user's data
-                    setProfilePicturedb(profilePictureUrl); // Update the state with the retrieved profile picture URL
-                    setUsernamedb(username);
-                    setNamedb(name);  // Update the state with the retrieved username
-                }
-            } catch (error) {
-                console.error('Error fetching profile picture:', error);
+    const fetchUserData = async () => {
+        try {
+            const user = firebase.auth().currentUser; // Get the current user
+            const userDoc = await firebase.firestore().collection('users').doc(user.uid).get(); // Fetch the user's document from the 'users' collection
+            if (userDoc.exists) {
+                const userData = userDoc.data(); // Get the data from the user's document
+                const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
+                const username = userData.username;
+                const name = userData.name; // Get the username from the user's data
+                const posts = userData.posts;
+                setProfilePicturedb(profilePictureUrl); // Update the state with the retrieved profile picture URL
+                setUsernamedb(username);
+                setNamedb(name);  // Update the state with the retrieved username
+                setPostsdb(posts);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching profile picture:', error);
+        }
+    };
 
-        fetchProfilePicture(); // Call the fetchProfilePicture function
+    useEffect(() => {
+        fetchUserData(); // Call the fetchProfilePicture function
     }, []);
 
     const pickImage = async () => {
@@ -225,8 +252,8 @@ const EditProfileScreen = ({ navigation }) => {
             >
                 <View style={styles.popupContainer}>
                     <View style={styles.popup}>
-                        <Ionicons name="checkmark-circle-outline" size={100} color="green" />
-                        <Text style={styles.popupText}>Image uploaded successfully!</Text>
+                        <Ionicons name="checkmark-circle-outline" size={100} color="black" />
+                        <Text style={styles.popupText}>Profile saved successfully!</Text>
                     </View>
                 </View>
             </Modal>
