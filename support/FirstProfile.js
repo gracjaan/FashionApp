@@ -1,4 +1,4 @@
-import { View, Image, FlatList, TouchableOpacity } from 'react-native'
+import { View, Image, FlatList, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState, useContext } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
@@ -28,6 +28,42 @@ const FirstProfile = ({ navigation }) => {
         }
     };
 
+    const deletePost = async (postId) => {
+        try {
+            // Delete the image from storage
+            const postRef = firebase.firestore().collection('posts').doc(postId);
+            const postDoc = await postRef.get();
+            if (postDoc.exists) {
+                const imageUrl = postDoc.data().imageUrl;
+                const imageRef = firebase.storage().refFromURL(imageUrl);
+                await imageRef.delete();
+            }
+
+            // Delete the post from the database
+            await postRef.delete();
+
+            // Refetch the posts
+            fetchPosts();
+        } catch (error) {
+            console.error('Error deleting post:', error);
+        }
+    };
+
+    const handleDelete = (postId) => {
+        Alert.alert(
+            'Delete Photo',
+            'Are you sure you want to delete this photo?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => deletePost(postId),
+                },
+            ],
+        );
+    };
+
     useEffect(() => {
         fetchPosts(); // Call the fetchPosts function
     }, []);
@@ -45,6 +81,7 @@ const FirstProfile = ({ navigation }) => {
                             aspectRatio: 1, // Maintain the aspect ratio of the image
                         }}
                         onPress={() => navigation.navigate('PostScreen', { item: item })}
+                        onLongPress={() => handleDelete(item.postId)} // Handle long press to delete
                     >
                         <Image
                             source={{ uri: item.imageUrl }}
