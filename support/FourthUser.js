@@ -30,7 +30,7 @@ const FourthUser = ({ user, navigation }) => {
 
     useEffect(() => {
         fetchPosts(); // Call the fetchPosts function
-    }, []);
+    }, [user]);
 
     return (
         <View style={{ flex: 1 }}>

@@ -30,7 +30,7 @@ const ThirdUser = ({user}) => {
 
     useEffect(() => {
         fetchWishlist();
-    }, []);
+    }, [user]);
 
     const renderItem = ({ item }) => {
         return (

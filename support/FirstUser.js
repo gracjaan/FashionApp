@@ -29,7 +29,7 @@ const FirstUser = ({ user, navigation }) => {
 
     useEffect(() => {
         fetchPosts(); // Call the fetchPosts function
-    }, []);
+    }, [user]);
 
     return (
         <View style={{ flex: 1, backgroundColor: 'black', }}>
