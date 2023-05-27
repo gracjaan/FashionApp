@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, Alert } from 'react-native'
 import React, { useState, useEffect, useContext } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
@@ -9,7 +9,6 @@ const CommentsScreen = ({ route }) => {
     const [comment, setComment] = useState('')
     const [comments, setComments] = useState([]);
     const { postId } = route.params
-    const [commentToDelete, setCommentToDelete] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const { currentUser } = useContext(UserContext);
 
@@ -83,38 +82,26 @@ const CommentsScreen = ({ route }) => {
     };
 
     const handleCommentLongPress = (commentId) => {
-        console.log('Long pressed comment with ID:', commentId);
-        setCommentToDelete(commentId);
+        Alert.alert(
+            'Delete comment?',
+            'Are you sure you want to delete this comment?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    onPress: () => {
+                        deleteComment(commentId);
+                    },
+                    style: 'destructive',
+                },
+            ],
+            { cancelable: false }
+        );
+
     };
-
-    const handleDeletePress = async () => {
-        if (commentToDelete) {
-            const commentDoc = await firebase
-                .firestore()
-                .collection('posts')
-                .doc(postId)
-                .collection('comments')
-                .doc(commentToDelete)
-                .get();
-
-            if (commentDoc.exists) {
-                const commentData = commentDoc.data();
-                const currentUserUid = firebase.auth().currentUser.uid;
-
-                if (commentData.uid === currentUserUid) {
-                    console.log('Deleting comment with ID:', commentToDelete);
-                    deleteComment(commentToDelete);
-                } else {
-                    console.log("You are not the author of this comment.");
-                }
-            } else {
-                console.log("Comment does not exist.");
-            }
-
-            setCommentToDelete(null);
-        }
-    };
-
 
     const renderCommentItem = ({ item }) => {
         return (
@@ -180,13 +167,6 @@ const CommentsScreen = ({ route }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <Modal visible={commentToDelete !== null} animationType="slide" transparent={true}>
-                    <View style={styles.deleteConfirmationContainer}>
-                        <Text style={{ fontFamily: 'Helvetica', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 20 }}>Are you sure you want to delete this comment?</Text>
-                        <Button title="Delete" onPress={handleDeletePress} />
-                        <Button title="Cancel" onPress={() => setCommentToDelete(null)} />
-                    </View>
-                </Modal>
             </KeyboardAvoidingView>
         </SafeAreaView>
     )

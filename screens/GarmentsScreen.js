@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, ScrollView } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, ScrollView, Alert } from 'react-native'
 import React, { useState, useEffect, useContext } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
@@ -10,7 +10,6 @@ const GarmentsScreen = ({ route }) => {
     const [post, setPost] = useState(null);
     const [alternative, setAlternative] = useState('')
     const [alternatives, setAlternatives] = useState([]);
-    const [alternativeToDelete, setAlternativeToDelete] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const { currentUser } = useContext(UserContext);
 
@@ -91,36 +90,24 @@ const GarmentsScreen = ({ route }) => {
     };
 
     const handleAlternativeLongPress = (alternativeId) => {
-        console.log('Long pressed alternative with ID:', alternativeId);
-        setAlternativeToDelete(alternativeId);
-    };
-
-    const handleDeletePress = async () => {
-        if (alternativeToDelete) {
-            const alternativeDoc = await firebase
-                .firestore()
-                .collection('posts')
-                .doc(postId)
-                .collection('alternatives')
-                .doc(alternativeToDelete)
-                .get();
-
-            if (alternativeDoc.exists) {
-                const alternativeData = alternativeDoc.data();
-                const currentUserUid = firebase.auth().currentUser.uid;
-
-                if (alternativeData.uid === currentUserUid) {
-                    console.log('Deleting alternative with ID:', alternativeToDelete);
-                    deleteAlternative(alternativeToDelete);
-                } else {
-                    console.log("You are not the author of this alternative.");
-                }
-            } else {
-                console.log("Alternative does not exist.");
-            }
-
-            setAlternativeToDelete(null);
-        }
+        Alert.alert(
+            'Delete alternative?',
+            'Are you sure you want to delete this alternative?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    onPress: () => {
+                        deleteAlternative(alternativeId);
+                    },
+                    style: 'destructive',
+                },
+            ],
+            { cancelable: false }
+        );
     };
 
     const renderAlternativeItem = ({ item }) => {
@@ -216,13 +203,6 @@ const GarmentsScreen = ({ route }) => {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                        <Modal visible={alternativeToDelete !== null} animationType="slide" transparent={true}>
-                            <View style={styles.deleteConfirmationContainer}>
-                                <Text style={{ fontFamily: 'Helvetica', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 20 }}>Are you sure you want to delete this alternative?</Text>
-                                <Button title="Delete" onPress={handleDeletePress} />
-                                <Button title="Cancel" onPress={() => setAlternativeToDelete(null)} />
-                            </View>
-                        </Modal>
                     </KeyboardAvoidingView>
                 </>
 
