@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image, Modal } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image, Modal, Linking } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useContext } from 'react'
 import firebase from 'firebase/compat/app';
@@ -103,7 +103,7 @@ const AddPostScreen = () => {
       return;
     }
 
-    if (isImageSelected && top && bottom) {
+    if (isImageSelected && top && bottom && validateLinks([top, bottom])) {
       setIsPosting(true); // Set isPosting state to true to indicate a post is in progress
 
       const downloadUrl = await uploadImageToFirebase(image);
@@ -134,6 +134,18 @@ const AddPostScreen = () => {
         { cancelable: false }
       );
     }
+  };
+
+  const validateLinks = (links) => {
+    const linkRegex = /^(http(s)?:\/\/)?[\w.-]+\.[a-zA-Z]{2,3}(\/\S*)?$/;
+  
+    for (const link of links) {
+      if (!linkRegex.test(link)) {
+        return false;
+      }
+    }
+  
+    return true;
   };
 
 
@@ -236,7 +248,7 @@ const AddPostScreen = () => {
         >
           <View style={styles.popupContainer}>
             <View style={styles.popup}>
-              <Ionicons name="checkmark-circle-outline" size={100} color="green" />
+              <Ionicons name="checkmark-circle-outline" size={100} color="black" />
               <Text style={styles.popupText}>Image uploaded successfully!</Text>
             </View>
           </View>
