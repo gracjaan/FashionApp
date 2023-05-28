@@ -208,7 +208,9 @@ const GarmentsScreen = ({ route }) => {
                 </>
 
             ) : (
-                <Text style={styles.text}>Loading...</Text>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#aaa" />
+                </View>
             )}
         </SafeAreaView>
     )
