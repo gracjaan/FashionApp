@@ -21,7 +21,12 @@ const FourthProfile = ({ navigation }) => {
                     posts.push(post);
                 }
             }
-            const sortedPosts = posts.sort((a, b) => b.timestamp - a.timestamp);
+
+            const uniquePosts = Array.from(new Set(posts.map(post => post.postId))).map(postId => {
+                return posts.find(post => post.postId === postId);
+            });
+
+            const sortedPosts = uniquePosts.sort((a, b) => b.timestamp - a.timestamp);
             console.log('1 '+sortedPosts.length)
             setPosts(sortedPosts);
             console.log('2 '+posts.length)
@@ -63,7 +68,7 @@ const FourthProfile = ({ navigation }) => {
 
     useEffect(() => {
         fetchPosts(); // Call the fetchPosts function
-    }, []);
+    }, [currentUser.inspo]);
 
     return (
         <View style={{ flex: 1, backgroundColor: 'black', }}>

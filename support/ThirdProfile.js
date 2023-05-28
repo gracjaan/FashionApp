@@ -16,7 +16,7 @@ const ThirdProfile = () => {
     const [image, setImage] = useState('');
     const storageRef = firebase.storage().ref();
     const [wishlistData, setWishlistData] = useState([]);
-    const { currentUser } = useContext(UserContext);
+    const { currentUser, setCurrentUser } = useContext(UserContext);
 
     const fetchWishlist = () => {
         try {
@@ -41,7 +41,7 @@ const ThirdProfile = () => {
     }, []);
 
 
-    const uploadImageToFirebase = async (uri) => {
+    const addItem = async (uri) => {
         const compressedUri = await compressAndResizeImage(uri);
         const response = await fetch(compressedUri);
         const blob = await response.blob();
@@ -102,7 +102,7 @@ const ThirdProfile = () => {
 
     const onPostButtonPress = async () => {
         if (image) {
-            await uploadImageToFirebase(image);
+            await addItem(image);
             reset();
             fetchWishlist();
         } else {
