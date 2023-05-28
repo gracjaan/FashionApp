@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, FlatList, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, useWindowDimensions, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState, useContext } from 'react'
 import { Header, Avatar } from 'react-native-elements';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
@@ -14,12 +14,12 @@ import SecondUser from '../support/SecondUser';
 import ThirdUser from '../support/ThirdUser';
 import FourthUser from '../support/FourthUser';
 
-const UserScreen = ({ route, navigation }) => {    
+const UserScreen = ({ route, navigation }) => {
     const layout = useWindowDimensions();
     const { uid } = route.params;
     const [user, setUser] = useState(null);
     const [follow, setFollow] = useState(false);
-    const {currentUser} = useContext(UserContext);
+    const { currentUser } = useContext(UserContext);
 
     const [index, setIndex] = useState(0);
 
@@ -105,8 +105,8 @@ const UserScreen = ({ route, navigation }) => {
 
     if (!user) {
         return (
-            <View>
-                <Text>Loading...</Text>
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#aaa" />
             </View>
         );
     }
@@ -275,5 +275,13 @@ const styles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    loadingContainer: {
+        flex: 1,
+        backgroundColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        marginBottom: 10,
     },
 })
