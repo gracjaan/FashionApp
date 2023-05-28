@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/auth';
+import RatingSlider from './RatingSlider';
 
 
 const PostItem = ({ item, navigation }) => {
@@ -140,7 +141,7 @@ const PostItem = ({ item, navigation }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ marginHorizontal: 10 }}>
+            <View style={{ marginHorizontal: 10, marginBottom: 5 }}>
                 {item.description && (
                     <View style={{ flexDirection: 'row', marginBottom: 5 }}>
                         <Text style={styles.nickname}>{item.username}: </Text>
@@ -148,6 +149,9 @@ const PostItem = ({ item, navigation }) => {
                     </View>
                 )}
                 <Text style={styles.description}>liked by {item.likes.length} fashion icons.</Text>
+            </View>
+            <View style={{ marginHorizontal: 10 }}>
+                <RatingSlider postId={item.postId} />
             </View>
         </View>
     )
