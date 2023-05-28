@@ -19,7 +19,7 @@ const UserScreen = ({ route, navigation }) => {
     const { uid } = route.params;
     const [user, setUser] = useState(null);
     const [follow, setFollow] = useState(false);
-    const { currentUser } = useContext(UserContext);
+    const { currentUser, setCurrentUser } = useContext(UserContext);
 
     const [index, setIndex] = useState(0);
 
@@ -65,6 +65,8 @@ const UserScreen = ({ route, navigation }) => {
             following: firebase.firestore.FieldValue.arrayUnion(otherUserUid)
         });
 
+        setCurrentUser({ ...currentUser, following: [...currentUser.following, otherUserUid] });
+
         setFollow(true);
     };
 
@@ -79,16 +81,16 @@ const UserScreen = ({ route, navigation }) => {
             following: firebase.firestore.FieldValue.arrayRemove(otherUserUid)
         });
 
+        setCurrentUser({ ...currentUser, following: currentUser.following.filter(uid => uid !== otherUserUid) });
+
         setFollow(false);
     };
 
     const handleFollowButtonPress = async (otherUserUid) => {
         try {
-            console.log('Follow button pressed for user:', otherUserUid);
             const currentUserUid = firebase.auth().currentUser.uid;
             const otherUser = (await firebase.firestore().collection('users').doc(otherUserUid).get()).data();
 
-            console.log('otherUser', otherUser);
             // Check if the current user is already following the other user
             if (otherUser.followers.includes(currentUserUid)) {
                 // If yes, remove the current user's uid from the other user's followers array
@@ -98,6 +100,8 @@ const UserScreen = ({ route, navigation }) => {
                 // If no, add the current user's uid to the other user's followers array
                 addFollow({ currentUserUid, otherUserUid });
             }
+
+            console.log(currentUser.following)
         } catch (error) {
             console.error('Error handling follow button press:', error);
         }
