@@ -5,7 +5,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import 'firebase/compat/firestore';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImageManipulator  from 'expo-image-manipulator';
+import * as ImageManipulator from 'expo-image-manipulator';
 import UserContext from '../context/UserContext';
 
 
@@ -16,9 +16,9 @@ const AddPostScreen = () => {
   const [top, setTop] = useState('')
   const [bottom, setBottom] = useState('')
   const [accessory, setAccessory] = useState('')
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, setCurrentUser } = useContext(UserContext);
   const [showPopup, setShowPopup] = useState(false);
-  const [isPosting, setIsPosting] = useState(false); 
+  const [isPosting, setIsPosting] = useState(false);
 
   const storageRef = firebase.storage().ref();
 
@@ -51,13 +51,18 @@ const AddPostScreen = () => {
         accessorylink: accessory, // Replace with the accessory state value
 
         likes: [], // Initial likes value
-        
+
         imageUrl: downloadUrl, // URL of the uploaded image
         timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
       });
 
       await firebase.firestore().collection('users').doc(currentUser.uid).update({
         posts: firebase.firestore.FieldValue.arrayUnion(postId)
+      });
+
+      setCurrentUser({
+        ...currentUser,
+        posts: [...currentUser.posts, postId],
       });
 
       return downloadUrl;
@@ -68,14 +73,14 @@ const AddPostScreen = () => {
   };
 
   const compressAndResizeImage = async (uri) => {
-    try{
-    const manipResult = await ImageManipulator.manipulateAsync(
-      uri,
-      [{ resize: { width: 640, height: 640 } }],
-      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-    );
+    try {
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 640, height: 640 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
 
-    return manipResult.uri;
+      return manipResult.uri;
     } catch (error) {
       console.log('Error compressing image:', error);
       throw error;
@@ -138,13 +143,13 @@ const AddPostScreen = () => {
 
   const validateLinks = (links) => {
     const linkRegex = /^(http(s)?:\/\/)?[\w.-]+\.[a-zA-Z]{2,3}(\/\S*)?$/;
-  
+
     for (const link of links) {
       if (!linkRegex.test(link)) {
         return false;
       }
     }
-  
+
     return true;
   };
 
