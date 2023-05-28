@@ -31,6 +31,7 @@ import store from './redux/store'
 import UserContext from './context/UserContext';
 import { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
+import FollowFeedScreen from './screens/FollowFeedScreen';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC0dquOYSr3_F0hhpIZMct_Vhpxq0-8Ly0",
@@ -146,6 +147,7 @@ export default function App() {
             <Stack.Screen name="FollowingScreen" component={FollowingScreen} options={{ gestureEnabled: true }} />
             <Stack.Screen name="ArticleScreen" component={ArticleScreen} options={{ gestureEnabled: true }} />
             <Stack.Screen name="PostScreen" component={PostScreen} options={{ gestureEnabled: true }} />
+            <Stack.Screen name="FollowFeedScreen" component={FollowFeedScreen} options={{ gestureEnabled: true }} />
           </Stack.Navigator>
         </NavigationContainer>
       </UserContext.Provider>
