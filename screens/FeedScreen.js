@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
@@ -18,13 +18,13 @@ const FeedScreen = ({ navigation }) => {
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
-  
+
       // Set the query to fetch posts starting from the last document
       let query = firebase.firestore()
         .collection('posts')
         .orderBy('timestamp', 'desc')
         .limit(10);
-  
+
       // If there's a last document, fetch posts after that document
       if (lastDocument) {
         query = query.startAfter(lastDocument);
@@ -32,21 +32,21 @@ const FeedScreen = ({ navigation }) => {
         // Reset the posts data when lastDocument is null
         setPostsData([]);
       }
-  
+
       const snapshot = await query.get();
-  
+
       const newPosts = snapshot.docs.map(doc => ({
         postId: doc.id, // Include the postId as a field in each post object
         ...doc.data()
       }));
-  
+
       // Update the last document
       if (snapshot.docs.length > 0) {
         setLastDocument(snapshot.docs[snapshot.docs.length - 1]);
       } else {
         setLastDocument(null);
       }
-  
+
       // Append the new posts to the existing posts
       setPostsData(prevPosts => [...prevPosts, ...newPosts]);
     } catch (error) {
@@ -54,7 +54,7 @@ const FeedScreen = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   const refreshPosts = async () => {
     try {
@@ -75,6 +75,14 @@ const FeedScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('FollowFeedScreen')}>
+          <Ionicons name="people" size={25} color="white" style={{ marginRight: 10 }} />
+        </TouchableOpacity>
+      ),
+    });
+
     // Fetch initial posts
     fetchPosts();
   }, []);
