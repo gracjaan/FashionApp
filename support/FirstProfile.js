@@ -42,6 +42,15 @@ const FirstProfile = ({ navigation }) => {
             // Delete the post from the database
             await postRef.delete();
 
+            // Remove the post from the user collection
+            const userRef = firebase.firestore().collection('users').doc(currentUser.uid);
+            await userRef.update({
+                posts: firebase.firestore.FieldValue.arrayRemove(postId)
+            });
+
+            // Remove the post from the current user object
+            currentUser.posts = currentUser.posts.filter((item) => item !== postId);
+
             // Refetch the posts
             fetchPosts();
         } catch (error) {
