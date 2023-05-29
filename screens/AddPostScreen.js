@@ -108,7 +108,7 @@ const AddPostScreen = () => {
       return;
     }
 
-    if (isImageSelected && top && bottom && validateLinks([top, bottom])) {
+    if (isImageSelected && top && bottom && accessory) {
       setIsPosting(true); // Set isPosting state to true to indicate a post is in progress
 
       const downloadUrl = await uploadImageToFirebase(image);
@@ -132,7 +132,7 @@ const AddPostScreen = () => {
     } else {
       Alert.alert(
         'Incomplete Fields',
-        'Please select an image and provide links for top and bottom.',
+        'Please select an image and provide insights for top, bottom and accessory.',
         [
           { text: 'OK' }
         ],
@@ -184,7 +184,7 @@ const AddPostScreen = () => {
                 style={styles.secondColumn}
                 onChangeText={text => setTop(text)}
                 value={top}
-                placeholder="www.example.com"
+                placeholder="top"
                 placeholderTextColor={'grey'}
                 keyboardAppearance='dark'
               />
@@ -199,7 +199,7 @@ const AddPostScreen = () => {
                 style={styles.secondColumn}
                 onChangeText={text => setBottom(text)}
                 value={bottom}
-                placeholder="www.example.com"
+                placeholder="bottom"
                 placeholderTextColor={'grey'}
                 keyboardAppearance='dark'
               />
@@ -214,7 +214,7 @@ const AddPostScreen = () => {
                 style={styles.secondColumn}
                 onChangeText={text => setAccessory(text)}
                 value={accessory}
-                placeholder="www.example.com"
+                placeholder="accessory"
                 placeholderTextColor={'grey'}
                 keyboardAppearance='dark'
               />
