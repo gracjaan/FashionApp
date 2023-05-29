@@ -1,5 +1,5 @@
 import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Image, Keyboard, TouchableOpacity, TextInput, Button, Alert, Modal } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import firebase from 'firebase/compat/app';
@@ -7,12 +7,12 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
 import * as ImageManipulator from 'expo-image-manipulator';
-
-
+import UserContext from '../context/UserContext';
 
 const EditProfileScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [name, setName] = useState('');
+    const { currentUser, setCurrentUser } = useContext(UserContext);
     const [image, setImage] = useState(null);
     const [profilePicturedb, setProfilePicturedb] = useState('');
     const [usernamedb, setUsernamedb] = useState('');
@@ -22,26 +22,33 @@ const EditProfileScreen = ({ navigation }) => {
 
     const updateProfile = async () => {
         try {
-            const user = firebase.auth().currentUser; // Get the current user
 
             if (image) {
                 // If image is not null, upload it to Firebase and get the download URL
                 const downloadUrl = await uploadImageToFirebase(image);
 
                 // Update the profile picture field with the download URL
-                await firebase.firestore().collection('users').doc(user.uid).update({
+                await firebase.firestore().collection('users').doc(currentUser.uid).update({
                     profilePicture: downloadUrl,
                 });
             }
 
             // Update the name and username fields with the new values from state
-            await firebase.firestore().collection('users').doc(user.uid).update({
+            await firebase.firestore().collection('users').doc(currentUser.uid).update({
                 name: namedb,
                 username: usernamedb,
             });
 
             // Update the attributes of each post
             await updatePosts();
+
+            // Update the currentUser object
+            setCurrentUser({
+                ...currentUser,
+                name: namedb,
+                username: usernamedb,
+                profilePicture: image ? image : profilePicturedb,
+            });
 
             console.log('Profile updated successfully!');
         } catch (error) {
@@ -107,6 +114,7 @@ const EditProfileScreen = ({ navigation }) => {
                                     setShowPopup(true);
                                     setTimeout(() => {
                                         setShowPopup(false);
+                                        navigation.goBack();
                                     }, 1200);
                                 },
                                 style: 'default',

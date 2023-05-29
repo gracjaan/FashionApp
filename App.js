@@ -130,7 +130,7 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <UserContext.Provider value={{ currentUser }}>
+      <UserContext.Provider value={{ currentUser, setCurrentUser }}>
         <NavigationContainer>
           <Stack.Navigator screenOptions={defaultHeaderOptions}>
             <Stack.Screen name="NameScreen" component={NameScreen} />

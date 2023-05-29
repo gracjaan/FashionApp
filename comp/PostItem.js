@@ -11,7 +11,7 @@ import RatingSlider from './RatingSlider';
 
 const PostItem = ({ item, navigation }) => {
 
-    const { currentUser } = useContext(UserContext);
+    const { currentUser, setCurrentUser } = useContext(UserContext);
     const [isInspired, setIsInspired] = useState(currentUser.inspo.includes(item.postId));
     const [isLiked, setIsLiked] = useState(item.likes.includes(currentUser.uid));
 
@@ -75,14 +75,16 @@ const PostItem = ({ item, navigation }) => {
                     });
 
                     currentUser.inspo = currentUser.inspo.filter((postId) => postId !== item.postId);
+                    setCurrentUser({...currentUser, inspo: currentUser.inspo.filter((item) => item !== item.postId)});
 
                 } else {
                     // Add the post's ID to the inspo array
                     await userRef.update({
                         inspo: firebase.firestore.FieldValue.arrayUnion(item.postId),
                     });
-
+                    
                     currentUser.inspo.push(item.postId);
+                    setCurrentUser ({...currentUser, inspo: [...currentUser.inspo, item.postId]});
 
                 }
                 console.log(currentUser.inspo);
@@ -97,7 +99,7 @@ const PostItem = ({ item, navigation }) => {
         // Update the isInspired state when the currentUser changes
         setIsInspired(currentUser.inspo.includes(item.postId));
         setIsLiked(item.likes.includes(currentUser.uid));
-    }, [currentUser]);
+    }, []);
 
     return (
         <View style={styles.cardView}>

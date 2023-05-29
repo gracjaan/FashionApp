@@ -126,7 +126,6 @@ const GarmentsScreen = ({ route }) => {
     };
 
     const renderAlternatives = () => {
-        console.log(alternatives.length);
         if (isLoading) {
             return (
                 <View style={styles.loadingContainer}>
@@ -164,7 +163,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'arrow-up'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.toplink ? post.toplink : "not provided."}</Text>
+                                <Text style={styles.link}>{post.toplink ? post.toplink : "not provided."}</Text>
                             </View>
                         </View>
                         <View style={styles.rowContainer}>
@@ -172,7 +171,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'arrow-down'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.bottomlink ? post.bottomlink : "not provided."}</Text>
+                                <Text style={styles.link}>{post.bottomlink ? post.bottomlink : "not provided."}</Text>
                             </View>
                         </View>
                         <View style={styles.rowContainer}>
@@ -180,7 +179,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'add'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.accessorylink ? post.accessorylink : "not provided."}</Text>
+                                <Text style={styles.link}>{post.accessorylink ? post.accessorylink : "not provided."}</Text>
                             </View>
                         </View>
                         {renderAlternatives()}
@@ -208,7 +207,9 @@ const GarmentsScreen = ({ route }) => {
                 </>
 
             ) : (
-                <Text style={styles.text}>Loading...</Text>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#aaa" />
+                </View>
             )}
         </SafeAreaView>
     )
@@ -240,9 +241,17 @@ const styles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontWeight: 'bold',
     },
+    link: {
+        color: 'white',
+        fontSize: 20,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        textDecorationLine: 'underline',
+    },
     linkContainer: {
         justifyContent: 'center',
         marginLeft: 20,
+        marginRight: 10,
     },
     alternativesListContainer: {
         paddingVertical: 10,

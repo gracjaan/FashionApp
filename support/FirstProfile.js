@@ -74,8 +74,9 @@ const FirstProfile = ({ navigation }) => {
     };
 
     useEffect(() => {
+        console.log('FirstProfile useEffect');
         fetchPosts(); // Call the fetchPosts function
-    }, []);
+    }, [currentUser.posts]);
 
     return (
         <View style={{ flex: 1, backgroundColor: 'black', }}>
