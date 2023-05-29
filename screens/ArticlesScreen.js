@@ -45,7 +45,7 @@ const ArticlesScreen = ({ navigation }) => {
     });
 
     return (
-      <TouchableOpacity onPress={() => navigation.navigate('ArticleScreen', { articleId: item.id })}>
+      <TouchableOpacity onPress={() => navigation.navigate('ArticleScreen', { item: item })}>
         <View style={styles.articleContainer}>
           <Image source={{ uri: item.postPicture }} style={styles.articleImage} />
           <View style={styles.articleInfo}>

@@ -7,38 +7,9 @@ import 'firebase/auth';
 import { Image } from 'expo-image';
 
 const ArticleScreen = ({ route }) => {
-    const { articleId } = route.params;
-    const [article, setArticle] = useState(null);
+    const { item } = route.params;
 
-    useEffect(() => {
-        // Fetch the specific article from Firebase Firestore
-        const fetchArticle = async () => {
-            try {
-                const doc = await firebase.firestore().collection('articles').doc(articleId).get();
-                if (doc.exists) {
-                    const articleData = doc.data();
-                    setArticle(articleData);
-                    console.log(articleData);
-                } else {
-                    console.log('Article not found');
-                }
-            } catch (error) {
-                console.log('Error fetching article:', error);
-            }
-        };
-
-        fetchArticle();
-    }, [articleId]);
-
-    if (!article) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#aaa" />
-            </View>
-        );
-    }
-
-    const timestamp = article.timestamp.toDate();
+    const timestamp = item.timestamp.toDate();
 
     const formattedDate = timestamp.toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -54,20 +25,20 @@ const ArticleScreen = ({ route }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {article && (
+            {item && (
                 <ScrollView>
-                    <Image source={{ uri: article.postPicture }} style={styles.articleImage} />
+                    <Image source={{ uri: item.postPicture }} style={styles.articleImage} />
                     <View style={styles.articleContainer}>
-                        <Image source={{ uri: article.authorPicture }} style={styles.authorPicture} />
+                        <Image source={{ uri: item.authorPicture }} style={styles.authorPicture} />
                         <View style={styles.articleInfo}>
-                            <Text style={styles.articleTitle}>{article.title}</Text>
-                            <Text style={styles.articleAuthor}>{article.author}</Text>
+                            <Text style={styles.articleTitle}>{item.title}</Text>
+                            <Text style={styles.articleAuthor}>{item.author}</Text>
                             <Text style={styles.articleDate}>{formattedDate} · {formattedTime}</Text>
                         </View>
                     </View>
                     <View style={styles.article}>
-                        {article.paragraphs && article.paragraphs.length > 0 ? (
-                            article.paragraphs.map((paragraph, index) => (
+                        {item.paragraphs && item.paragraphs.length > 0 ? (
+                            item.paragraphs.map((paragraph, index) => (
                                 <Text key={index} style={styles.articleContent}>{paragraph}</Text>
                             ))
                         ) : (

@@ -1,37 +1,36 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, Alert } from 'react-native'
+import React, { useState, useEffect, useContext } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
+import UserContext from '../context/UserContext';
 
 const CommentsScreen = ({ route }) => {
     const [comment, setComment] = useState('')
     const [comments, setComments] = useState([]);
     const { postId } = route.params
-    const [commentToDelete, setCommentToDelete] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const { currentUser } = useContext(UserContext);
 
     // Fetch comments data from Firestore
     const fetchComments = async () => {
         try {
-            const commentsSnapshot = await firebase.firestore().collection('posts').doc(postId).collection('comments').get();
-            const commentsData = commentsSnapshot.docs.map(async doc => {
-                const commentData = doc.data();
-                const userData = await firebase.firestore().collection('users').doc(commentData.uid).get();
-                const userDataValue = userData.data();
-                return {
-                    ...commentData,
-                    username: userDataValue.username, // Replace 'username' with the actual field name in the users collection for username
-                    userProfilePicture: userDataValue.profilePicture, // Replace 'profilePicture' with the actual field name in the users collection for profile picture
-                    commentId: doc.id,
-                };
-            });
-            Promise.all(commentsData).then(result => {
-                setComments(result);
-                setIsLoading(false);
-            });
+            const snapshot = await firebase
+                .firestore()
+                .collection('posts')
+                .doc(postId)
+                .collection('comments')
+                .get();
+
+            const comments = snapshot.docs.map(doc => ({
+                commentId: doc.id,
+                ...doc.data(),
+            }));
+
+            setComments(comments);
+            setIsLoading(false);
         } catch (error) {
-            console.error('Error fetching comments from Firebase:', error);
+            console.error('Error fetching comments:', error);
         }
     };
 
@@ -40,7 +39,7 @@ const CommentsScreen = ({ route }) => {
     }, [postId]);
 
 
-    const addC = async () => {
+    const addComment = async () => {
 
         try {
             // Generate a postId
@@ -48,10 +47,13 @@ const CommentsScreen = ({ route }) => {
 
             // Add relevant data to Firestore database
             await firebase.firestore().collection('posts').doc(postId).collection('comments').doc(commentId).set({
-                uid: firebase.auth().currentUser.uid, // Replace with the user ID
-                comment: comment,
-                timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
+                uid: currentUser.uid, // Replace with the user ID
+                username: currentUser.username, // Replace with the user's username
+                profilePicture: currentUser.profilePicture, // Replace with the user's profile picture URL
+                comment: comment, // Replace with the comment state value
+                timeStamp: firebase.firestore.FieldValue.serverTimestamp(), // Replace with the current UNIX timestamp
             });
+
             setComment('');
             await fetchComments();
             return commentId;
@@ -79,45 +81,34 @@ const CommentsScreen = ({ route }) => {
         }
     };
 
-    const handleCommentLongPress = (commentId) => {
-        console.log('Long pressed comment with ID:', commentId);
-        setCommentToDelete(commentId);
+    const handleCommentLongPress = (comment) => {
+        if (comment.uid !== currentUser.uid) return;
+        Alert.alert(
+            'Delete comment?',
+            'Are you sure you want to delete this comment?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    onPress: () => {
+                        deleteComment(comment.commentId);
+                    },
+                    style: 'destructive',
+                },
+            ],
+            { cancelable: false }
+        );
+
     };
-
-    const handleDeletePress = async () => {
-        if (commentToDelete) {
-            const commentDoc = await firebase
-                .firestore()
-                .collection('posts')
-                .doc(postId)
-                .collection('comments')
-                .doc(commentToDelete)
-                .get();
-
-            if (commentDoc.exists) {
-                const commentData = commentDoc.data();
-                const currentUserUid = firebase.auth().currentUser.uid;
-
-                if (commentData.uid === currentUserUid) {
-                    console.log('Deleting comment with ID:', commentToDelete);
-                    deleteComment(commentToDelete);
-                } else {
-                    console.log("You are not the author of this comment.");
-                }
-            } else {
-                console.log("Comment does not exist.");
-            }
-
-            setCommentToDelete(null);
-        }
-    };
-
 
     const renderCommentItem = ({ item }) => {
         return (
-            <TouchableOpacity onLongPress={() => handleCommentLongPress(item.commentId)}>
+            <TouchableOpacity onLongPress={() => handleCommentLongPress(item)}>
                 <View style={styles.commentContainer}>
-                    <Image source={{ uri: item.userProfilePicture }} style={styles.avatar} />
+                    <Image source={{ uri: item.profilePicture }} style={styles.avatar} />
                     <View style={styles.commentContentContainer}>
                         <Text style={styles.username}>{item.username}</Text>
                         <Text style={styles.comment}>{item.comment}</Text>
@@ -171,19 +162,12 @@ const CommentsScreen = ({ route }) => {
                         </View>
                         <TouchableOpacity
                             style={styles.continue}
-                            onPress={addC} // Call searchUsers function on button press
+                            onPress={addComment} // Call searchUsers function on button press
                         >
                             <Ionicons name={'arrow-forward'} size={30} />
                         </TouchableOpacity>
                     </View>
                 </View>
-                <Modal visible={commentToDelete !== null} animationType="slide" transparent={true}>
-                    <View style={styles.deleteConfirmationContainer}>
-                        <Text style={{ fontFamily: 'Helvetica', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 20 }}>Are you sure you want to delete this comment?</Text>
-                        <Button title="Delete" onPress={handleDeletePress} />
-                        <Button title="Cancel" onPress={() => setCommentToDelete(null)} />
-                    </View>
-                </Modal>
             </KeyboardAvoidingView>
         </SafeAreaView>
     )

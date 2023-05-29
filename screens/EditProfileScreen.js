@@ -1,40 +1,53 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Image, Keyboard, TouchableOpacity, TextInput, Button } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Image, Keyboard, TouchableOpacity, TextInput, Button, Alert, Modal } from 'react-native'
+import React, { useState, useEffect, useContext } from 'react'
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import 'firebase/auth';
 import * as ImageManipulator from 'expo-image-manipulator';
-
-
+import UserContext from '../context/UserContext';
 
 const EditProfileScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [name, setName] = useState('');
+    const { currentUser, setCurrentUser } = useContext(UserContext);
     const [image, setImage] = useState(null);
     const [profilePicturedb, setProfilePicturedb] = useState('');
     const [usernamedb, setUsernamedb] = useState('');
     const [namedb, setNamedb] = useState('');
+    const [postsdb, setPostsdb] = useState('');
+    const [showPopup, setShowPopup] = useState(false);
 
     const updateProfile = async () => {
         try {
-            const user = firebase.auth().currentUser; // Get the current user
 
             if (image) {
                 // If image is not null, upload it to Firebase and get the download URL
                 const downloadUrl = await uploadImageToFirebase(image);
 
                 // Update the profile picture field with the download URL
-                await firebase.firestore().collection('users').doc(user.uid).update({
+                await firebase.firestore().collection('users').doc(currentUser.uid).update({
                     profilePicture: downloadUrl,
                 });
             }
 
             // Update the name and username fields with the new values from state
-            await firebase.firestore().collection('users').doc(user.uid).update({
+            await firebase.firestore().collection('users').doc(currentUser.uid).update({
                 name: namedb,
                 username: usernamedb,
+            });
+
+            // Update the attributes of each post
+            await updatePosts();
+
+            // Update the currentUser object
+            setCurrentUser({
+                ...currentUser,
+                name: namedb,
+                username: usernamedb,
+                profilePicture: image ? image : profilePicturedb,
             });
 
             console.log('Profile updated successfully!');
@@ -42,6 +55,28 @@ const EditProfileScreen = ({ navigation }) => {
             console.error('Error updating profile:', error);
         }
     };
+
+    const updatePosts = async () => {
+        try {
+            const updatePromises = postsdb.map(async (postId) => {
+                const postRef = firebase.firestore().collection('posts').doc(postId);
+                const postDoc = await postRef.get();
+
+                if (postDoc.exists) {
+                    await postRef.update({
+                        username: usernamedb,
+                        profilePicture: profilePicturedb,
+                    });
+                }
+            });
+
+            await Promise.all(updatePromises);
+            console.log('All posts updated successfully!');
+        } catch (error) {
+            console.error('Error updating posts:', error);
+        }
+    };
+
 
     const compressAndResizeImage = async (uri) => {
         try {
@@ -61,38 +96,61 @@ const EditProfileScreen = ({ navigation }) => {
 
 
     useEffect(() => {
-        // Use `setOptions` to update the button that we previously specified
-        // Now the button includes an `onPress` handler to update the count
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity onPress={() => { updateProfile() }}>
-                    <Text style={{ color: "#434343", marginRight: 10, fontFamily: 'Helvetica', fontSize: 20, fontWeight: 'bold' }}>Save</Text>
+                <TouchableOpacity onPress={() => {
+                    Alert.alert(
+                        'Save Changes',
+                        'Are you sure you want to save the changes?',
+                        [
+                            {
+                                text: 'Cancel',
+                                style: 'cancel',
+                            },
+                            {
+                                text: 'Save',
+                                onPress: () => {
+                                    updateProfile();
+                                    setShowPopup(true);
+                                    setTimeout(() => {
+                                        setShowPopup(false);
+                                        navigation.goBack();
+                                    }, 1200);
+                                },
+                                style: 'default',
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }}>
+                    <Text style={{ color: "white", marginRight: 10, fontFamily: 'Helvetica', fontSize: 20 }}>Save</Text>
                 </TouchableOpacity>
             ),
         });
     }, [navigation, updateProfile]);
 
-    useEffect(() => {
-        // Fetch the user's profile picture from Firebase
-        const fetchProfilePicture = async () => {
-            try {
-                const user = firebase.auth().currentUser; // Get the current user
-                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get(); // Fetch the user's document from the 'users' collection
-                if (userDoc.exists) {
-                    const userData = userDoc.data(); // Get the data from the user's document
-                    const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
-                    const username = userData.username;
-                    const name = userData.name; // Get the username from the user's data
-                    setProfilePicturedb(profilePictureUrl); // Update the state with the retrieved profile picture URL
-                    setUsernamedb(username);
-                    setNamedb(name);  // Update the state with the retrieved username
-                }
-            } catch (error) {
-                console.error('Error fetching profile picture:', error);
+    const fetchUserData = async () => {
+        try {
+            const user = firebase.auth().currentUser; // Get the current user
+            const userDoc = await firebase.firestore().collection('users').doc(user.uid).get(); // Fetch the user's document from the 'users' collection
+            if (userDoc.exists) {
+                const userData = userDoc.data(); // Get the data from the user's document
+                const profilePictureUrl = userData.profilePicture; // Get the profile picture URL from the user's data
+                const username = userData.username;
+                const name = userData.name; // Get the username from the user's data
+                const posts = userData.posts;
+                setProfilePicturedb(profilePictureUrl); // Update the state with the retrieved profile picture URL
+                setUsernamedb(username);
+                setNamedb(name);  // Update the state with the retrieved username
+                setPostsdb(posts);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching profile picture:', error);
+        }
+    };
 
-        fetchProfilePicture(); // Call the fetchProfilePicture function
+    useEffect(() => {
+        fetchUserData(); // Call the fetchProfilePicture function
     }, []);
 
     const pickImage = async () => {
@@ -128,6 +186,29 @@ const EditProfileScreen = ({ navigation }) => {
             return null;
         }
     };
+
+    const handleLogout = () => {
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Logout',
+                    onPress: () => {
+                        navigation.navigate('NameScreen');
+                        firebase.auth().signOut();
+                    },
+                    style: 'destructive',
+                },
+            ],
+            { cancelable: false }
+        );
+    };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -168,6 +249,22 @@ const EditProfileScreen = ({ navigation }) => {
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                <Text style={styles.logoutButtonText}>Log Out</Text>
+            </TouchableOpacity>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={showPopup}
+                onRequestClose={() => setShowPopup(false)}
+            >
+                <View style={styles.popupContainer}>
+                    <View style={styles.popup}>
+                        <Ionicons name="checkmark-circle-outline" size={100} color="black" />
+                        <Text style={styles.popupText}>Profile saved successfully!</Text>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     )
 }
@@ -209,5 +306,34 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'Helvetica',
         marginTop: 2,
+    },
+    logoutButton: {
+        alignSelf: 'center',
+        marginBottom: 20,
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    logoutButtonText: {
+        color: 'red',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    popupContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    popup: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    popupText: {
+        marginTop: 10,
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 })

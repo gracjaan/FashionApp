@@ -1,11 +1,12 @@
-import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, Alert, TextInput, KeyboardAvoidingView, TouchableOpacity, Image, Modal, Linking } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import 'firebase/compat/firestore';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImageManipulator  from 'expo-image-manipulator';
+import * as ImageManipulator from 'expo-image-manipulator';
+import UserContext from '../context/UserContext';
 
 
 const AddPostScreen = () => {
@@ -15,6 +16,9 @@ const AddPostScreen = () => {
   const [top, setTop] = useState('')
   const [bottom, setBottom] = useState('')
   const [accessory, setAccessory] = useState('')
+  const { currentUser, setCurrentUser } = useContext(UserContext);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
 
   const storageRef = firebase.storage().ref();
 
@@ -35,16 +39,30 @@ const AddPostScreen = () => {
 
       // Add relevant data to Firestore database
       await firebase.firestore().collection('posts').doc(postId).set({
-        postId: postId, // Use the generated postId
-        uid: firebase.auth().currentUser.uid, // Replace with the user ID
+        //postId: postId, // Use the generated postId
+
+        uid: currentUser.uid, // Replace with the user ID
+        profilePicture: currentUser.profilePicture, // Replace with the user's profile picture URL
+        username: currentUser.username, // Replace with the user's username
+
         description: des, // Replace with the description state value
         toplink: top, // Replace with the top state value
         bottomlink: bottom, // Replace with the bottom state value
         accessorylink: accessory, // Replace with the accessory state value
+
         likes: [], // Initial likes value
-        //comments: [], // Empty array for comments
+
         imageUrl: downloadUrl, // URL of the uploaded image
         timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Current timestamp
+      });
+
+      await firebase.firestore().collection('users').doc(currentUser.uid).update({
+        posts: firebase.firestore.FieldValue.arrayUnion(postId)
+      });
+
+      setCurrentUser({
+        ...currentUser,
+        posts: [...currentUser.posts, postId],
       });
 
       return downloadUrl;
@@ -55,14 +73,14 @@ const AddPostScreen = () => {
   };
 
   const compressAndResizeImage = async (uri) => {
-    try{
-    const manipResult = await ImageManipulator.manipulateAsync(
-      uri,
-      [{ resize: { width: 640, height: 640 } }],
-      { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-    );
+    try {
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 640, height: 640 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
 
-    return manipResult.uri;
+      return manipResult.uri;
     } catch (error) {
       console.log('Error compressing image:', error);
       throw error;
@@ -85,12 +103,56 @@ const AddPostScreen = () => {
   };
 
   const onPostButtonPress = async () => {
-    if (isImageSelected && top && bottom) {
-      await uploadImageToFirebase(image);
+    if (isPosting) {
+      // Post button is already clicked and in progress, do nothing
+      return;
+    }
+
+    if (isImageSelected && top && bottom && validateLinks([top, bottom])) {
+      setIsPosting(true); // Set isPosting state to true to indicate a post is in progress
+
+      const downloadUrl = await uploadImageToFirebase(image);
+      if (downloadUrl) {
+        // Show pop-up window for 2 seconds
+        setShowPopup(true);
+        setTimeout(() => {
+          setShowPopup(false);
+          // Reset the page
+          setIsImageSelected(false);
+          setImage('');
+          setDes('');
+          setTop('');
+          setBottom('');
+          setAccessory('');
+          setIsPosting(false); // Reset isPosting state to false after the post is completed
+        }, 1200);
+      } else {
+        setIsPosting(false); // Reset isPosting state to false if there was an error in uploading the image
+      }
     } else {
-      Alert.alert('Please select required fields.', 'You must select an image and provide links for top and bottom.' )
+      Alert.alert(
+        'Incomplete Fields',
+        'Please select an image and provide links for top and bottom.',
+        [
+          { text: 'OK' }
+        ],
+        { cancelable: false }
+      );
     }
   };
+
+  const validateLinks = (links) => {
+    const linkRegex = /^(http(s)?:\/\/)?[\w.-]+\.[a-zA-Z]{2,3}(\/\S*)?$/;
+
+    for (const link of links) {
+      if (!linkRegex.test(link)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -177,11 +239,25 @@ const AddPostScreen = () => {
         <View style={styles.buttonView}>
           <TouchableOpacity
             onPress={onPostButtonPress}
-            style={styles.continue}
+            style={[styles.continue, isPosting && styles.disabledButton]} // Apply disabledButton style if isPosting is true
+            disabled={isPosting}
           >
             <Text style={styles.description}>Post</Text>
           </TouchableOpacity>
         </View>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showPopup}
+          onRequestClose={() => setShowPopup(false)}
+        >
+          <View style={styles.popupContainer}>
+            <View style={styles.popup}>
+              <Ionicons name="checkmark-circle-outline" size={100} color="black" />
+              <Text style={styles.popupText}>Image uploaded successfully!</Text>
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
@@ -274,5 +350,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Helvetica',
     fontWeight: 'regular',
-  }
+  },
+  popupContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  popup: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  popupText: {
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  disabledButton: {
+    opacity: 0.6, // Reduce the opacity of the disabled button
+  },
 })

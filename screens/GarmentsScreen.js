@@ -1,16 +1,17 @@
-import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, ScrollView } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { View, Text, SafeAreaView, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput, Keyboard, TouchableOpacity, FlatList, Image, Modal, Button, ScrollView, Alert } from 'react-native'
+import React, { useState, useEffect, useContext } from 'react'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
+import UserContext from '../context/UserContext';
 
 const GarmentsScreen = ({ route }) => {
     const { postId } = route.params;
     const [post, setPost] = useState(null);
     const [alternative, setAlternative] = useState('')
     const [alternatives, setAlternatives] = useState([]);
-    const [alternativeToDelete, setAlternativeToDelete] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const { currentUser } = useContext(UserContext);
 
     useEffect(() => {
         firebase.firestore().collection('posts').doc(postId).get()
@@ -22,34 +23,29 @@ const GarmentsScreen = ({ route }) => {
                 }
             })
             .catch(error => console.log(error));
+        fetchAlternatives();
     }, [postId]);
 
     const fetchAlternatives = async () => {
         try {
-            const alternativesSnapshot = await firebase.firestore().collection('posts').doc(postId).collection('alternatives').get();
-            const alternativesData = alternativesSnapshot.docs.map(async doc => {
-                const alternativeData = doc.data();
-                const userData = await firebase.firestore().collection('users').doc(alternativeData.uid).get();
-                const userDataValue = userData.data();
-                return {
-                    ...alternativeData,
-                    username: userDataValue.username, // Replace 'username' with the actual field name in the users collection for username
-                    userProfilePicture: userDataValue.profilePicture, // Replace 'profilePicture' with the actual field name in the users collection for profile picture
-                    alternativeId: doc.id,
-                };
-            });
-            Promise.all(alternativesData).then(result => {
-                setAlternatives(result);
-                setIsLoading(false);
-            });
+            const snapshot = await firebase
+                .firestore()
+                .collection('posts')
+                .doc(postId)
+                .collection('alternatives')
+                .get();
+
+            const alternatives = snapshot.docs.map(doc => ({
+                alternativeId: doc.id,
+                ...doc.data(),
+            }));
+
+            setAlternatives(alternatives);
+            setIsLoading(false);
         } catch (error) {
-            console.error('Error fetching alternatives from Firebase:', error);
+            console.error('Error fetching alternatives:', error);
         }
     };
-
-    useEffect(() => {
-        fetchAlternatives();
-    }, [postId]);
 
 
     const addAlternative = async () => {
@@ -60,10 +56,13 @@ const GarmentsScreen = ({ route }) => {
 
             // Add relevant data to Firestore database
             await firebase.firestore().collection('posts').doc(postId).collection('alternatives').doc(alternativeId).set({
-                uid: firebase.auth().currentUser.uid, // Replace with the user ID
-                alternative: alternative,
-                timeStamp: firebase.firestore.FieldValue.serverTimestamp(),
+                uid: currentUser.uid, // Replace with the user ID
+                username: currentUser.username, // Replace with the user's username
+                profilePicture: currentUser.profilePicture, // Replace with the user's profile picture URL
+                alternative: alternative, // Replace with the comment state value
+                timeStamp: firebase.firestore.FieldValue.serverTimestamp(), // Replace with the current UNIX timestamp
             });
+
             setAlternative('');
             await fetchAlternatives();
             return alternativeId;
@@ -90,44 +89,33 @@ const GarmentsScreen = ({ route }) => {
         }
     };
 
-    const handleAlternativeLongPress = (alternativeId) => {
-        console.log('Long pressed alternative with ID:', alternativeId);
-        setAlternativeToDelete(alternativeId);
-    };
-
-    const handleDeletePress = async () => {
-        if (alternativeToDelete) {
-            const alternativeDoc = await firebase
-                .firestore()
-                .collection('posts')
-                .doc(postId)
-                .collection('alternatives')
-                .doc(alternativeToDelete)
-                .get();
-
-            if (alternativeDoc.exists) {
-                const alternativeData = alternativeDoc.data();
-                const currentUserUid = firebase.auth().currentUser.uid;
-
-                if (alternativeData.uid === currentUserUid) {
-                    console.log('Deleting alternative with ID:', alternativeToDelete);
-                    deleteAlternative(alternativeToDelete);
-                } else {
-                    console.log("You are not the author of this alternative.");
-                }
-            } else {
-                console.log("Alternative does not exist.");
-            }
-
-            setAlternativeToDelete(null);
-        }
+    const handleAlternativeLongPress = (alternative) => {
+        if (alternative.uid !== currentUser.uid) return;
+        Alert.alert(
+            'Delete alternative?',
+            'Are you sure you want to delete this alternative?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    onPress: () => {
+                        deleteAlternative(alternative.alternativeId);
+                    },
+                    style: 'destructive',
+                },
+            ],
+            { cancelable: false }
+        );
     };
 
     const renderAlternativeItem = ({ item }) => {
         return (
-            <TouchableOpacity onLongPress={() => handleAlternativeLongPress(item.alternativeId)}>
+            <TouchableOpacity onLongPress={() => handleAlternativeLongPress(item)}>
                 <View style={styles.alternativeContainer}>
-                    <Image source={{ uri: item.userProfilePicture }} style={styles.avatar} />
+                    <Image source={{ uri: item.profilePicture }} style={styles.avatar} />
                     <View style={styles.alternativeContentContainer}>
                         <Text style={styles.username}>{item.username}</Text>
                         <Text style={styles.alternative}>{item.alternative}</Text>
@@ -138,7 +126,6 @@ const GarmentsScreen = ({ route }) => {
     };
 
     const renderAlternatives = () => {
-        console.log(alternatives.length);
         if (isLoading) {
             return (
                 <View style={styles.loadingContainer}>
@@ -176,7 +163,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'arrow-up'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.toplink ? post.toplink : "not provided."}</Text>
+                                <Text style={styles.link}>{post.toplink ? post.toplink : "not provided."}</Text>
                             </View>
                         </View>
                         <View style={styles.rowContainer}>
@@ -184,7 +171,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'arrow-down'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.bottomlink ? post.bottomlink : "not provided."}</Text>
+                                <Text style={styles.link}>{post.bottomlink ? post.bottomlink : "not provided."}</Text>
                             </View>
                         </View>
                         <View style={styles.rowContainer}>
@@ -192,7 +179,7 @@ const GarmentsScreen = ({ route }) => {
                                 <Ionicons name={'add'} size={27} color={'white'} />
                             </View>
                             <View style={styles.linkContainer}>
-                                <Text style={styles.text}>{post.accessorylink ? post.accessorylink : "not provided."}</Text>
+                                <Text style={styles.link}>{post.accessorylink ? post.accessorylink : "not provided."}</Text>
                             </View>
                         </View>
                         {renderAlternatives()}
@@ -216,18 +203,13 @@ const GarmentsScreen = ({ route }) => {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                        <Modal visible={alternativeToDelete !== null} animationType="slide" transparent={true}>
-                            <View style={styles.deleteConfirmationContainer}>
-                                <Text style={{ fontFamily: 'Helvetica', fontWeight: 'bold', fontSize: 20, textAlign: 'center', marginBottom: 20 }}>Are you sure you want to delete this alternative?</Text>
-                                <Button title="Delete" onPress={handleDeletePress} />
-                                <Button title="Cancel" onPress={() => setAlternativeToDelete(null)} />
-                            </View>
-                        </Modal>
                     </KeyboardAvoidingView>
                 </>
 
             ) : (
-                <Text style={styles.text}>Loading...</Text>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#aaa" />
+                </View>
             )}
         </SafeAreaView>
     )
@@ -259,9 +241,17 @@ const styles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontWeight: 'bold',
     },
+    link: {
+        color: 'white',
+        fontSize: 20,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        textDecorationLine: 'underline',
+    },
     linkContainer: {
         justifyContent: 'center',
         marginLeft: 20,
+        marginRight: 10,
     },
     alternativesListContainer: {
         paddingVertical: 10,
