@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: 'Helvetica',
         fontWeight: 'regular',
-        textDecorationLine: 'underline',
+        //textDecorationLine: 'underline',
     },
     linkContainer: {
         justifyContent: 'center',
