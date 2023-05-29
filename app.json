@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "newApp",
-    "slug": "newApp",
+    "name": "styll",
+    "slug": "styll",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,7 +18,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.styll"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,6 +29,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6694ffbd-1bfb-4182-bf13-cd7ff34ad76e"
+      }
     }
   }
 }
