@@ -30,6 +30,14 @@ const FollowFeedScreen = ({ navigation }) => {
 
             const following = userSnapshot.data().following;
 
+            // Check if the following array is empty
+            if (following.length === 0) {
+                // Reset the posts data and exit early
+                setPostsData([]);
+                setIsLoading(false);
+                return;
+            }
+
             // Set the query to fetch posts from followed accounts
             let query = firebase.firestore()
                 .collection('posts')
@@ -110,23 +118,36 @@ const FollowFeedScreen = ({ navigation }) => {
         );
     };
 
+    const renderNoFollowers = () => {
+        return (
+            <View style={styles.noCommentsContainer}>
+                <Ionicons name="ellipsis-horizontal" size={100} color="#aaa" style={{ marginBottom: 10 }} />
+                <Text style={styles.noCommentsText}>no followers yet. {"\n"} find your first inspiring profile.</Text>
+            </View>
+        );
+    };
+
     return (
         <SafeAreaView style={styles.container}>
-            <FlatList
-                data={postsData}
-                keyExtractor={item => item.postId}
-                renderItem={renderItem}
-                ListFooterComponent={isLoading && renderLoader}
-                onEndReached={loadMoreItems}
-                onEndReachedThreshold={0.5}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={refreshPosts}
-                        colors={['#aaa']} // Customize the refresh indicator colors if needed
-                    />
-                }
-            />
+            {postsData.length === 0 ? (
+                renderNoFollowers()
+            ) : (
+                <FlatList
+                    data={postsData}
+                    keyExtractor={item => item.postId}
+                    renderItem={renderItem}
+                    ListFooterComponent={isLoading && renderLoader}
+                    onEndReached={loadMoreItems}
+                    onEndReachedThreshold={0.5}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isRefreshing}
+                            onRefresh={refreshPosts}
+                            colors={['#aaa']} // Customize the refresh indicator colors if needed
+                        />
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 };
@@ -194,5 +215,17 @@ const styles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontWeight: 'regular',
         //textAlign: 'center',
-    }
+    },
+    noCommentsContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noCommentsText: {
+        color: 'grey',
+        fontSize: 16,
+        fontFamily: 'Helvetica',
+        fontWeight: 'regular',
+        textAlign: 'center',
+    },
 })
