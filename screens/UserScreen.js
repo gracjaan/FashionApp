@@ -66,7 +66,7 @@ const UserScreen = ({ route, navigation }) => {
         });
 
         setCurrentUser({ ...currentUser, following: [...currentUser.following, otherUserUid] });
-
+        setUser(prevUser => ({ ...prevUser, followers: [...prevUser.followers, currentUserUid] }));
         setFollow(true);
     };
 
@@ -82,7 +82,7 @@ const UserScreen = ({ route, navigation }) => {
         });
 
         setCurrentUser({ ...currentUser, following: currentUser.following.filter(uid => uid !== otherUserUid) });
-
+        setUser(prevUser => ({...prevUser, followers: prevUser.followers.filter(uid => uid !== currentUserUid)}));
         setFollow(false);
     };
 

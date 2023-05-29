@@ -44,11 +44,20 @@ const PostItem = ({ item, navigation }) => {
                     await postRef.update({
                         likes: firebase.firestore.FieldValue.arrayRemove(currentUser.uid),
                     });
+
+                    // Update the item object with the new likes array
+                    const updatedLikes = post.likes.filter((uid) => uid !== currentUser.uid);
+                    item.likes = updatedLikes;
+
                 } else {
                     // Add the user's UID to the likes array
                     await postRef.update({
                         likes: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
                     });
+
+                    // Update the item object with the new likes array
+                    const updatedLikes = [...post.likes, currentUser.uid];
+                    item.likes = updatedLikes;
                 }
                 setIsLiked(!likedByUser);
             }
@@ -56,6 +65,7 @@ const PostItem = ({ item, navigation }) => {
             console.error('Error toggling like:', error);
         }
     };
+
 
 
     // Function to handle toggling the bookmark action
@@ -75,16 +85,16 @@ const PostItem = ({ item, navigation }) => {
                     });
 
                     currentUser.inspo = currentUser.inspo.filter((postId) => postId !== item.postId);
-                    setCurrentUser({...currentUser, inspo: currentUser.inspo.filter((item) => item !== item.postId)});
+                    setCurrentUser({ ...currentUser, inspo: currentUser.inspo.filter((item) => item !== item.postId) });
 
                 } else {
                     // Add the post's ID to the inspo array
                     await userRef.update({
                         inspo: firebase.firestore.FieldValue.arrayUnion(item.postId),
                     });
-                    
+
                     currentUser.inspo.push(item.postId);
-                    setCurrentUser ({...currentUser, inspo: [...currentUser.inspo, item.postId]});
+                    setCurrentUser({ ...currentUser, inspo: [...currentUser.inspo, item.postId] });
 
                 }
                 console.log(currentUser.inspo);
