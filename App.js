@@ -116,8 +116,15 @@ export default function App() {
     const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
         const userSnapshot = await firebase.firestore().collection('users').doc(user.uid).get();
-        const userData = userSnapshot.data();
-        setCurrentUser({ uid: user.uid, ...userData });
+        if (userSnapshot.exists) {
+          const userData = userSnapshot.data();
+          setCurrentUser({ uid: user.uid, ...userData });
+        } else {
+          const state = store.getState(); // Access the current state of the Redux store
+          const { name, username, dateOfBirth } = state.user; // Destructure the values from the user reducer
+          setCurrentUser({ uid: user.uid, name: name, username: username, dateOfBirth: dateOfBirth, profilePicture: 'https://firebasestorage.googleapis.com/v0/b/fir-auth-13f1b.appspot.com/o/images%2F1683401784814?alt=media&token=4cd4781d-685b-4554-a037-78d22e1f0cc0', followers: [], following: [], posts: [], inspo: [] });
+        }
+
       } else {
         setCurrentUser(null);
       }
